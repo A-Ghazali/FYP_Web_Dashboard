@@ -3,129 +3,549 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KTMB Security Monitor - Login</title>
+    <title>KTMB Command Terminal - S-ICCT Portal</title>
     <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #121212;
-            color: #fff;
+            font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            color: #ffffff;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+            background-color: #03060d;
         }
 
-        .login-card {
-            background: #1e1e1e;
-            padding: 35px 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+        /* Canvas Particle Grid Background */
+        #particle-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
-            max-width: 360px;
-            border-top: 5px solid #4CAF50;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Ken Burns Slow Motion Animation */
+        @keyframes kenburns {
+            0% { transform: scale(1) translate(0, 0); }
+            50% { transform: scale(1.08) translate(-12px, -6px); }
+            100% { transform: scale(1) translate(0, 0); }
+        }
+
+        /* Dynamic Background Slides */
+        .bg-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            opacity: 0;
+            transition: opacity 1.8s ease-in-out;
+            z-index: -3;
+            will-change: transform, opacity;
+            filter: brightness(0.65) contrast(1.2) saturate(1.1);
+        }
+
+        .bg-slide.active {
+            opacity: 1;
+            animation: kenburns 18s ease-in-out infinite alternate;
+        }
+
+        /* Dark Vignette & Sci-Fi Overlay */
+        .bg-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, rgba(6, 12, 24, 0.4) 0%, rgba(2, 4, 8, 0.95) 100%),
+                        linear-gradient(to bottom, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.7));
+            z-index: -2;
+        }
+
+        /* Active Fleet Indicator Badge (Top Right) */
+        .fleet-badge {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            background: rgba(10, 16, 28, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 199, 44, 0.4);
+            color: #FFC72C;
+            padding: 8px 18px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 15;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.7), 0 0 15px rgba(255, 199, 44, 0.15);
+        }
+
+        .fleet-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #00E676;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #00E676;
+            animation: pulse 1.8s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.8); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        /* Clean Glassmorphism Login Card */
+        .login-card {
+            background: rgba(10, 15, 26, 0.85);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            padding: 42px 38px;
+            border-radius: 20px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.9), 
+                        0 0 0 1px rgba(255, 255, 255, 0.1),
+                        0 0 40px rgba(0, 43, 102, 0.35);
+            width: 100%;
+            max-width: 410px;
+            border-top: 4px solid #FFC72C;
+            text-align: center;
+            z-index: 10;
+            position: relative;
+        }
+
+        /* Status Header Strip */
+        .status-strip {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.65rem;
+            color: #64748b;
+            font-weight: 800;
+            letter-spacing: 1.2px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        .status-online {
+            color: #00E676;
+            text-shadow: 0 0 8px rgba(0, 230, 118, 0.4);
+        }
+
+        /* Logo Container */
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            background: #ffffff;
+            padding: 12px 20px;
+            border-radius: 10px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .ktm-logo {
+            width: 175px;
+            height: auto;
+            display: block;
+        }
+
+        .brand-badge {
+            background: linear-gradient(135deg, #002B66 0%, #001533 100%);
+            color: #FFC72C;
+            font-weight: 800;
+            font-size: 0.68rem;
+            letter-spacing: 2px;
+            padding: 5px 14px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            border: 1px solid rgba(255, 199, 44, 0.5);
         }
 
         .login-card h2 {
-            margin-top: 0;
+            margin: 0 0 4px 0;
             font-size: 1.4rem;
-            text-align: center;
-            color: #fff;
+            color: #ffffff;
+            font-weight: 800;
+            letter-spacing: 0.8px;
         }
 
         .subtitle {
-            text-align: center;
-            font-size: 0.85rem;
-            color: #888;
-            margin-bottom: 25px;
+            font-size: 0.80rem;
+            color: #94a3b8;
+            margin-bottom: 26px;
+            font-weight: 500;
         }
 
+        /* Form Inputs */
         .input-group {
-            margin-bottom: 18px;
+            margin-bottom: 20px;
+            text-align: left;
         }
 
         .input-group label {
             display: block;
-            font-size: 0.85rem;
-            color: #bbb;
-            margin-bottom: 6px;
+            font-size: 0.78rem;
+            color: #cbd5e1;
+            margin-bottom: 8px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
         }
 
         .input-group input {
             width: 100%;
-            padding: 10px 12px;
-            background: #2a2a2a;
-            border: 1px solid #333;
-            border-radius: 5px;
-            color: #fff;
-            box-sizing: border-box;
+            padding: 13px 16px;
+            background: #ffffff;
+            border: 2px solid #334155;
+            border-left: 5px solid #002B66;
+            border-radius: 8px;
+            color: #0f172a;
             font-size: 0.95rem;
+            font-weight: 600;
+            transition: all 0.25s ease;
+            box-sizing: border-box;
+        }
+
+        .input-group input::placeholder {
+            color: #94a3b8;
+            font-weight: 400;
         }
 
         .input-group input:focus {
             outline: none;
-            border-color: #4CAF50;
+            border-color: #FFC72C;
+            border-left: 5px solid #FFC72C;
+            box-shadow: 0 0 15px rgba(255, 199, 44, 0.4);
+            background: #ffffff;
         }
 
+        /* Action Button */
         button {
             width: 100%;
-            padding: 12px;
-            background: #4CAF50;
+            padding: 14px;
+            background: linear-gradient(180deg, #FFD043 0%, #FFC72C 100%);
             border: none;
-            border-radius: 5px;
-            color: #fff;
-            font-size: 1rem;
-            font-weight: bold;
+            border-radius: 8px;
+            color: #001A40;
+            font-size: 0.98rem;
+            font-weight: 800;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
             cursor: pointer;
-            transition: background 0.2s ease;
-            margin-top: 10px;
+            transition: all 0.25s ease;
+            margin-top: 6px;
+            box-shadow: 0 6px 20px rgba(255, 199, 44, 0.4);
         }
 
         button:hover {
-            background: #45a049;
+            background: linear-gradient(180deg, #FFE072 0%, #e5b225 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 199, 44, 0.6);
+        }
+
+        button:active {
+            transform: translateY(1px);
         }
 
         button:disabled {
-            background: #2e6b31;
+            background: #4a3d16;
+            color: #888888;
             cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        /* Interactive Fleet Switcher Tabs */
+        .carousel-tabs {
+            position: absolute;
+            bottom: 25px;
+            display: flex;
+            gap: 8px;
+            z-index: 20;
+            background: rgba(8, 13, 22, 0.85);
+            padding: 6px;
+            border-radius: 30px;
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: none;
+            margin-top: 0;
+            width: auto;
+        }
+
+        .tab-btn:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.12);
+            transform: none;
+            box-shadow: none;
+        }
+
+        .tab-btn.active {
+            background: #FFC72C;
+            color: #001A40;
+            box-shadow: 0 0 15px rgba(255, 199, 44, 0.6);
+        }
+
+        /* Malaysia Time HUD (Bottom Left) */
+        .live-hud-footer {
+            position: absolute;
+            bottom: 25px;
+            left: 25px;
+            font-size: 0.75rem;
+            color: #94a3b8;
+            font-weight: 700;
+            letter-spacing: 1px;
+            font-family: monospace;
+            z-index: 15;
+            background: rgba(10, 16, 28, 0.75);
+            backdrop-filter: blur(8px);
+            padding: 8px 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .card-footer {
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 0.72rem;
+            color: #64748b;
         }
 
         #error-msg {
-            color: #FF5252;
-            font-size: 0.85rem;
+            color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.12);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.82rem;
             text-align: center;
-            margin-top: 15px;
+            margin-top: 16px;
             display: none;
         }
     </style>
 </head>
 <body>
 
+    <!-- Particle Grid Canvas -->
+    <canvas id="particle-canvas"></canvas>
+
+    <!-- Malaysia Time Live Clock -->
+    <div class="live-hud-footer">
+        MYT (MY): <span id="clock-display" style="color: #FFC72C;">--:--:--</span>
+    </div>
+
+    <!-- Dynamic Background Image Slides -->
+    <div class="bg-slide active" style="background-image: url('train-img/ets3.jpg');"></div>
+    <div class="bg-slide" style="background-image: url('train-img/ets2.jpg');"></div>
+    <div class="bg-slide" style="background-image: url('train-img/commuter.jpg');"></div>
+    <div class="bg-slide" style="background-image: url('train-img/intercity.jpg');"></div>
+    <div class="bg-overlay"></div>
+
+    <!-- Active Fleet Indicator Badge -->
+    <div class="fleet-badge">
+        <div class="fleet-dot"></div>
+        <span id="fleet-name">FLEET: ETS 301 CLASS</span>
+    </div>
+
+    <!-- Main Glassmorphism Login Card -->
     <div class="login-card">
-        <h2>KTMB S-ICCT Monitor</h2>
-        <div class="subtitle">Perak North Track Surveillance System</div>
+        <div class="status-strip">
+            <span>TERMINAL #04</span>
+            <span class="status-online">● SYS ONLINE</span>
+        </div>
+
+        <div class="logo-container">
+            <img src="logo/Keretapi_Tanah_Melayu_Berhad_Logo.svg.png" alt="KTMB Logo" class="ktm-logo">
+        </div>
+        
+        <div>
+            <span class="brand-badge">S-ICCT MONITORING SYSTEM</span>
+            <h2>DITN5B FYP PROJECT</h2>
+            <div class="subtitle">By Ghazali, Timothian, and Ammar</div>
+        </div>
         
         <form id="login-form">
             <div class="input-group">
-                <label for="email">Operator Email</label>
-                <input type="email" id="email" required placeholder="admin@ktmb.com.my">
+                <label for="email">Operator ID / Email</label>
+                <input type="email" id="email" required placeholder="operator@ktmb.com.my" autocomplete="username">
             </div>
             
             <div class="input-group">
                 <label for="password">Password</label>
-                <input type="password" id="password" required placeholder="••••••••">
+                <input type="password" id="password" required placeholder="••••••••" autocomplete="current-password">
             </div>
 
-            <button type="submit" id="btn-login">Sign In</button>
+            <button type="submit" id="btn-login">Sign In to Dashboard</button>
             <div id="error-msg">Invalid email or password.</div>
         </form>
+
+        <div class="card-footer">
+            Keretapi Tanah Melayu Berhad &copy; Trackside Surveillance
+        </div>
     </div>
 
-    <!-- Firebase App & Auth SDKs -->
+    <!-- Interactive Fleet Tabs Switcher -->
+    <div class="carousel-tabs">
+        <button class="tab-btn active" onclick="manualSetSlide(0)">ETS 3</button>
+        <button class="tab-btn" onclick="manualSetSlide(1)">ETS 2</button>
+        <button class="tab-btn" onclick="manualSetSlide(2)">KOMUTER</button>
+        <button class="tab-btn" onclick="manualSetSlide(3)">INTERCITY</button>
+    </div>
+
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
     <script>
+        // 1. Interactive Particle Node Canvas
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.vx = (Math.random() - 0.5) * 0.8;
+                this.vy = (Math.random() - 0.5) * 0.8;
+                this.radius = Math.random() * 1.8 + 1;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255, 199, 44, 0.4)';
+                ctx.fill();
+            }
+        }
+
+        for (let i = 0; i < 45; i++) particles.push(new Particle());
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach((p, index) => {
+                p.update();
+                p.draw();
+                for (let j = index + 1; j < particles.length; j++) {
+                    const p2 = particles[j];
+                    const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+                    if (dist < 120) {
+                        ctx.beginPath();
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.strokeStyle = `rgba(255, 199, 44, ${0.25 * (1 - dist / 120)})`;
+                        ctx.lineWidth = 0.8;
+                        ctx.stroke();
+                    }
+                }
+            });
+            requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
+
+        // 2. Malaysia Time (MYT) Clock
+        function updateMalaysiaClock() {
+            const now = new Date();
+            const options = {
+                timeZone: 'Asia/Kuala_Lumpur',
+                hour12: true,
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            };
+            document.getElementById('clock-display').innerText = now.toLocaleTimeString('en-GB', options);
+        }
+        setInterval(updateMalaysiaClock, 1000);
+        updateMalaysiaClock();
+
+        // 3. Train Carousel & Fleet Switcher Logic
+        const slides = document.querySelectorAll('.bg-slide');
+        const tabs = document.querySelectorAll('.tab-btn');
+        const fleetName = document.getElementById('fleet-name');
+
+        const trainFleetLabels = [
+            "FLEET: ETS 301 CLASS",
+            "FLEET: ETS CLASS 93",
+            "FLEET: KTM KOMUTER SCS",
+            "FLEET: KTM INTERCITY DIESEL"
+        ];
+
+        let currentSlide = 0;
+        let slideTimer;
+
+        function setSlide(index) {
+            slides[currentSlide].classList.remove('active');
+            tabs[currentSlide].classList.remove('active');
+            
+            currentSlide = index;
+            
+            slides[currentSlide].classList.add('active');
+            tabs[currentSlide].classList.add('active');
+            fleetName.innerText = trainFleetLabels[currentSlide];
+        }
+
+        function startTimer() {
+            slideTimer = setInterval(() => {
+                let nextSlide = (currentSlide + 1) % slides.length;
+                setSlide(nextSlide);
+            }, 6500);
+        }
+
+        function manualSetSlide(index) {
+            clearInterval(slideTimer);
+            setSlide(index);
+            startTimer();
+        }
+
+        startTimer();
+
+        // 4. Firebase Authentication Logic
         const firebaseConfig = {
             apiKey: "AIzaSyCTHW_s2SYe3KbDvDPWuyg5vHEbLv-MUnA",
             databaseURL: "https://fyp-sicct-default-rtdb.asia-southeast1.firebasedatabase.app",
@@ -135,7 +555,6 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
 
-        // Redirect dynamically once Firebase confirms valid state
         auth.onAuthStateChanged((user) => {
             if (user) {
                 const currentPath = window.location.pathname;
@@ -144,7 +563,6 @@
             }
         });
 
-        // Handle Login Submission
         document.getElementById('login-form').addEventListener('submit', (e) => {
             e.preventDefault();
             const email = document.getElementById('email').value;
@@ -153,12 +571,12 @@
             const loginBtn = document.getElementById('btn-login');
 
             errorMsg.style.display = "none";
-            loginBtn.innerText = "Authenticating...";
+            loginBtn.innerText = "Authenticating Operator...";
             loginBtn.disabled = true;
 
             auth.signInWithEmailAndPassword(email, password)
                 .catch((error) => {
-                    loginBtn.innerText = "Sign In";
+                    loginBtn.innerText = "Sign In to Dashboard";
                     loginBtn.disabled = false;
                     errorMsg.innerText = error.message;
                     errorMsg.style.display = "block";
