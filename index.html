@@ -3,157 +3,194 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KTMB Security Monitor - Login</title>
+    <title>KTMB Trackside Security Dashboard</title>
+    
+    <!-- Leaflet CSS for Map Styling -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #121212;
-            color: #fff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #121212; color: #fff; margin: 0; padding: 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #333; padding-bottom: 10px; }
+        
+        .header-controls { display: flex; align-items: center; gap: 15px; }
+        .btn-logout { background: #333; color: #fff; border: 1px solid #555; padding: 6px 12px; border-radius: 5px; cursor: pointer; font-size: 0.85rem; }
+        .btn-logout:hover { background: #d32f2f; border-color: #d32f2f; }
 
-        .login-card {
-            background: #1e1e1e;
-            padding: 35px 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
-            width: 100%;
-            max-width: 360px;
-            border-top: 5px solid #4CAF50;
-        }
+        .status-card { background: #1e1e1e; padding: 18px; border-radius: 8px; margin-bottom: 20px; font-size: 1.2rem; border-left: 6px solid #4CAF50; transition: all 0.3s ease; }
+        
+        /* Status Colors */
+        .status-secure { color: #4CAF50; font-weight: bold; }
+        .status-warning { color: #FF9800; font-weight: bold; }
+        .status-alarm { color: #FF5252; font-weight: bold; animation: blink 0.8s infinite; }
 
-        .login-card h2 {
-            margin-top: 0;
-            font-size: 1.4rem;
-            text-align: center;
-            color: #fff;
-        }
+        .telemetry-grid { display: flex; gap: 15px; margin-top: 10px; font-size: 0.95rem; color: #aaa; }
+        .telemetry-item { background: #2a2a2a; padding: 8px 12px; border-radius: 5px; }
 
-        .subtitle {
-            text-align: center;
-            font-size: 0.85rem;
-            color: #888;
-            margin-bottom: 25px;
-        }
+        #map { height: 480px; width: 100%; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.6); margin-bottom: 25px; }
+        
+        /* Incident Log Table Styling */
+        .log-section { background: #1e1e1e; padding: 18px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
+        .log-section h3 { margin-top: 0; margin-bottom: 15px; font-size: 1.1rem; color: #ddd; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.92rem; }
+        th { background: #2a2a2a; color: #bbb; padding: 10px 12px; font-weight: 600; border-bottom: 2px solid #333; }
+        td { padding: 10px 12px; border-bottom: 1px solid #282828; }
+        tr:hover { background-color: #262626; }
 
-        .input-group {
-            margin-bottom: 18px;
-        }
-
-        .input-group label {
-            display: block;
-            font-size: 0.85rem;
-            color: #bbb;
-            margin-bottom: 6px;
-        }
-
-        .input-group input {
-            width: 100%;
-            padding: 10px 12px;
-            background: #2a2a2a;
-            border: 1px solid #333;
-            border-radius: 5px;
-            color: #fff;
-            box-sizing: border-box;
-            font-size: 0.95rem;
-        }
-
-        .input-group input:focus {
-            outline: none;
-            border-color: #4CAF50;
-        }
-
-        button {
-            width: 100%;
-            padding: 12px;
-            background: #4CAF50;
-            border: none;
-            border-radius: 5px;
-            color: #fff;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.2s ease;
-            margin-top: 10px;
-        }
-
-        button:hover {
-            background: #45a049;
-        }
-
-        #error-msg {
-            color: #FF5252;
-            font-size: 0.85rem;
-            text-align: center;
-            margin-top: 15px;
-            display: none;
-        }
+        @keyframes blink { 50% { opacity: 0.2; } }
     </style>
 </head>
 <body>
 
-    <div class="login-card">
-        <h2>KTMB S-ICCT Monitor</h2>
-        <div class="subtitle">Perak North Track Surveillance System</div>
-        
-        <form id="login-form">
-            <div class="input-group">
-                <label for="email">Operator Email</label>
-                <input type="email" id="email" required placeholder="admin@ktmb.com.my">
-            </div>
-            
-            <div class="input-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" required placeholder="••••••••">
-            </div>
-
-            <button type="submit" id="btn-login">Sign In</button>
-            <div id="error-msg">Invalid email or password.</div>
-        </form>
+    <div class="header">
+        <h2>KTMB Anti-Theft AI Monitor (S-ICCT)</h2>
+        <div class="header-controls">
+            Sector: <b>Perak North Track Run</b>
+            <button id="logout-btn" class="btn-logout">Sign Out</button>
+        </div>
     </div>
 
-    <!-- Firebase App & Auth SDKs -->
+    <div id="card-box" class="status-card">
+        Node 01 Status: <span id="node-status" class="status-secure">CONNECTING TO CLOUD...</span>
+        <div class="telemetry-grid">
+            <div class="telemetry-item">ADC Reading: <b id="adc-val" style="color:#fff;">--</b></div>
+            <div class="telemetry-item">Tamper Conf: <b id="tamper-val" style="color:#fff;">--%</b></div>
+            <div class="telemetry-item">Shake Conf: <b id="shake-val" style="color:#fff;">--%</b></div>
+        </div>
+    </div>
+
+    <div id="map"></div>
+
+    <div class="log-section">
+        <h3>System Incident & Audit Log</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Log Key / Record</th>
+                    <th>Node ID</th>
+                    <th>Event Status</th>
+                    <th>Telemetry Summary</th>
+                </tr>
+            </thead>
+            <tbody id="log-body">
+                <tr>
+                    <td colspan="4" style="color: #666; text-align: center; padding: 15px;">Fetching permanent logs from database...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Leaflet Map Library -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
     <script>
+        // 1. Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyCTHW_s2SYe3KbDvDPWuyg5vHEbLv-MUnA",
             databaseURL: "https://fyp-sicct-default-rtdb.asia-southeast1.firebasedatabase.app",
             projectId: "fyp-sicct",
         };
-
+        
         firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
         const auth = firebase.auth();
 
-        // Redirect if already logged in
+        // Security Guard: Kick unauthenticated users back to login page
         auth.onAuthStateChanged((user) => {
-            if (user) {
-                window.location.href = "index.html";
+            if (!user) {
+                const currentPath = window.location.pathname;
+                const targetPath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1) + 'login.html';
+                window.location.replace(targetPath);
             }
         });
 
-        // Handle Login Submission
-        document.getElementById('login-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const errorMsg = document.getElementById('error-msg');
+        // Logout Button Handler
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            auth.signOut().then(() => {
+                const currentPath = window.location.pathname;
+                const targetPath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1) + 'login.html';
+                window.location.replace(targetPath);
+            });
+        });
 
-            errorMsg.style.display = "none";
+        // Target coordinates
+        const initialLat = 4.610258;
+        const initialLng = 101.088256;
 
-            auth.signInWithEmailAndPassword(email, password)
-                .then(() => {
-                    window.location.href = "index.html";
-                })
-                .catch((error) => {
-                    errorMsg.innerText = error.message;
-                    errorMsg.style.display = "block";
+        // 2. Initialize Leaflet Map
+        var map = L.map('map').setView([initialLat, initialLng], 16);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+
+        var nodeMarker = L.marker([initialLat, initialLng]).addTo(map);
+        nodeMarker.bindPopup("<b>Node 01: Kapar Sector</b><br>Connecting...").openPopup();
+
+        // 3. Listen to Realtime Live Telemetry Updates
+        const nodeRef = database.ref('ktmb_node_01');
+        nodeRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                const statusElement = document.getElementById('node-status');
+                const cardBox = document.getElementById('card-box');
+                
+                document.getElementById('adc-val').innerText = data.adc_value ?? '--';
+                document.getElementById('tamper-val').innerText = (data.tamper_confidence ?? 0) + '%';
+                document.getElementById('shake-val').innerText = (data.shake_confidence ?? 0) + '%';
+
+                statusElement.innerText = data.status;
+
+                if (data.lat && data.lng) {
+                    nodeMarker.setLatLng([data.lat, data.lng]);
+                }
+
+                if (data.status === "SECURE") {
+                    statusElement.className = "status-secure";
+                    cardBox.style.borderLeftColor = "#4CAF50";
+                    nodeMarker.bindPopup("<b>Node 01: Kapar Sector</b><br>Status: <span style='color:green;font-weight:bold;'>SECURE</span>");
+                
+                } else if (data.status === "PLATFORM SHAKE") {
+                    statusElement.className = "status-warning";
+                    cardBox.style.borderLeftColor = "#FF9800";
+                    nodeMarker.bindPopup("<b>Node 01: Kapar Sector</b><br>Status: <span style='color:orange;font-weight:bold;'>VIBRATION WARNING</span>").openPopup();
+                
+                } else {
+                    statusElement.className = "status-alarm";
+                    cardBox.style.borderLeftColor = "#FF5252";
+                    nodeMarker.bindPopup("<b style='color:red;'>🚨 SECURITY ALERT!</b><br>Threat: <b>" + data.status + "</b>").openPopup();
+                }
+            }
+        });
+
+        // 4. Listen to Permanent /logs Node from Firebase
+        const logsRef = database.ref('logs').limitToLast(15);
+        logsRef.on('value', (snapshot) => {
+            const logBody = document.getElementById('log-body');
+            logBody.innerHTML = '';
+
+            const logs = snapshot.val();
+            if (logs) {
+                Object.keys(logs).reverse().forEach((key) => {
+                    const log = logs[key];
+                    const row = document.createElement('tr');
+                    
+                    let statusBadgeColor = "#4CAF50";
+                    if (log.status === "PLATFORM SHAKE") statusBadgeColor = "#FF9800";
+                    else if (log.status !== "SECURE") statusBadgeColor = "#FF5252";
+
+                    row.innerHTML = `
+                        <td style="color:#aaa; font-family: monospace; font-size: 0.82rem;">${key}</td>
+                        <td><b>${log.node_id || 'Node 01'}</b></td>
+                        <td style="color:${statusBadgeColor}; font-weight:bold;">${log.status}</td>
+                        <td style="color:#bbb;">ADC: ${log.adc_value ?? '--'} | Tamper: ${log.tamper_confidence ?? 0}% | Shake: ${log.shake_confidence ?? 0}%</td>
+                    `;
+
+                    logBody.appendChild(row);
                 });
+            } else {
+                logBody.innerHTML = '<tr><td colspan="4" style="color: #666; text-align: center; padding: 15px;">No permanent logs recorded yet.</td></tr>';
+            }
         });
     </script>
 </body>
