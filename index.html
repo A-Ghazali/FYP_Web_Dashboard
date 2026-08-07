@@ -404,15 +404,16 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>Log Key / Record</th>
+                            <th>Date &amp; Time (MYT)</th>
                             <th>Node ID</th>
                             <th>Event Status</th>
+                            <th>Duration</th>
                             <th>Telemetry Summary</th>
                         </tr>
                     </thead>
                     <tbody id="log-body">
                         <tr>
-                            <td colspan="4" style="color: #64748b; text-align: center; padding: 18px;">Fetching permanent logs from database...</td>
+                            <td colspan="5" style="color: #64748b; text-align: center; padding: 18px;">Fetching permanent logs from database...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -505,6 +506,46 @@
         setInterval(updateMalaysiaClock, 1000);
         updateMalaysiaClock();
 
+        // Helper function to format timestamps into structured Date, Time, and Duration
+        function formatLogMetadata(log, key) {
+            let timestampMs = null;
+
+            // Check if log contains an explicit timestamp property (e.g. timestamp or time)
+            if (log.timestamp) {
+                timestampMs = typeof log.timestamp === 'number' ? log.timestamp : new Date(log.timestamp).getTime();
+            } else if (log.time) {
+                timestampMs = new Date(log.time).getTime();
+            } else {
+                // Fallback attempt: Parse Firebase push key if it contains timestamp components, 
+                // or use current client time if completely absent
+                timestampMs = Date.now();
+            }
+
+            const eventDate = new Date(timestampMs);
+            const dateStr = eventDate.toLocaleDateString('en-GB', { timeZone: 'Asia/Kuala_Lumpur', day: '2-digit', month: '2-digit', year: 'numeric' });
+            const timeStr = eventDate.toLocaleTimeString('en-GB', { timeZone: 'Asia/Kuala_Lumpur', hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            
+            // Format duration if stored (e.g., log.duration in seconds or ms), otherwise compute from start/end or show indicator
+            let durationStr = "--";
+            if (log.duration) {
+                const durSec = Number(log.duration);
+                if (durSec < 60) durationStr = `${durSec}s`;
+                else durationStr = `${(durSec / 60).toFixed(1)}m`;
+            } else if (log.start_time && log.end_time) {
+                const diffSec = Math.round((new Date(log.end_time) - new Date(log.start_time)) / 1000);
+                durationStr = diffSec < 60 ? `${diffSec}s` : `${(diffSec / 60).toFixed(1)}m`;
+            } else if (log.status === "SECURE") {
+                durationStr = "Normal";
+            } else {
+                durationStr = "Active / Ongoing";
+            }
+
+            return {
+                dateTimeDisplay: `${dateStr} <span style="color:#64748b; font-size:0.72rem; display:block;">${timeStr}</span>`,
+                durationDisplay: durationStr
+            };
+        }
+
         // 3. Firebase Configuration & Auth Guard
         const firebaseConfig = {
             apiKey: "AIzaSyCTHW_s2SYe3KbDvDPWuyg5vHEbLv-MUnA",
@@ -580,7 +621,7 @@
             }
         });
 
-        // 6. Permanent Database Incident Log Fetcher
+        // 6. Permanent Database Incident Log Fetcher with Date, Time, and Duration columns
         const logsRef = database.ref('logs').limitToLast(15);
         logsRef.on('value', (snapshot) => {
             const logBody = document.getElementById('log-body');
@@ -596,17 +637,20 @@
                     if (log.status === "PLATFORM SHAKE") statusBadgeColor = "#FF9800";
                     else if (log.status !== "SECURE") statusBadgeColor = "#FF5252";
 
+                    const meta = formatLogMetadata(log, key);
+
                     row.innerHTML = `
-                        <td style="color:#64748b; font-family: monospace; font-size: 0.78rem;">${key}</td>
+                        <td style="font-family: monospace; font-size: 0.78rem; color:#e2e8f0;">${meta.dateTimeDisplay}</td>
                         <td><b>${log.node_id || 'Node 01'}</b></td>
                         <td style="color:${statusBadgeColor}; font-weight:bold;">${log.status}</td>
+                        <td style="color:#FFC72C; font-family: monospace; font-weight: 600;">${meta.durationDisplay}</td>
                         <td style="color:#cbd5e1;">ADC: ${log.adc_value ?? '--'} | Tamper: ${log.tamper_confidence ?? 0}% | Shake: ${log.shake_confidence ?? 0}%</td>
                     `;
 
                     logBody.appendChild(row);
                 });
             } else {
-                logBody.innerHTML = '<tr><td colspan="4" style="color: #64748b; text-align: center; padding: 18px;">No permanent logs recorded yet.</td></tr>';
+                logBody.innerHTML = '<tr><td colspan="5" style="color: #64748b; text-align: center; padding: 18px;">No permanent logs recorded yet.</td></tr>';
             }
         });
     </script>
