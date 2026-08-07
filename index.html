@@ -53,8 +53,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 14px 28px;
-            background: rgba(10, 15, 26, 0.85);
+            padding: 14px 24px;
+            background: rgba(10, 15, 26, 0.90);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -67,92 +67,96 @@
         .header-brand {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 14px;
         }
 
         .logo-container {
             background: #ffffff;
-            padding: 6px 14px;
+            padding: 6px 10px;
             border-radius: 6px;
             display: flex;
             align-items: center;
             box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            flex-shrink: 0;
         }
 
         .ktm-logo {
-            height: 32px;
+            height: 28px;
             width: auto;
         }
 
         .header-title h1 {
-            font-size: 1.15rem;
+            font-size: 0.95rem;
             font-weight: 800;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
             color: #ffffff;
+            line-height: 1.25;
         }
 
         .header-title span {
-            font-size: 0.72rem;
+            font-size: 0.68rem;
             color: #FFC72C;
             font-weight: 800;
-            letter-spacing: 1.5px;
+            letter-spacing: 1px;
             text-transform: uppercase;
         }
 
         .header-actions {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 12px;
+            flex-shrink: 0;
         }
 
         .myt-clock {
             font-family: monospace;
-            font-size: 0.82rem;
+            font-size: 0.78rem;
             color: #94a3b8;
             background: rgba(255, 255, 255, 0.05);
-            padding: 6px 14px;
+            padding: 6px 10px;
             border-radius: 6px;
             border: 1px solid rgba(255, 255, 255, 0.08);
             font-weight: 700;
+            white-space: nowrap;
         }
 
         .btn-logout {
             background: rgba(255, 107, 107, 0.15);
             border: 1px solid rgba(255, 107, 107, 0.4);
             color: #ff6b6b;
-            padding: 8px 16px;
+            padding: 7px 12px;
             border-radius: 6px;
             font-weight: 700;
-            font-size: 0.80rem;
+            font-size: 0.75rem;
             cursor: pointer;
             transition: all 0.25s ease;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            white-space: nowrap;
         }
 
         .btn-logout:hover {
             background: rgba(255, 107, 107, 0.3);
             color: #ffffff;
-            box-shadow: 0 0 12px rgba(255, 107, 107, 0.4);
         }
 
         /* Dashboard Container */
         .dashboard-container {
             max-width: 1400px;
-            margin: 24px auto;
-            padding: 0 24px;
+            margin: 20px auto;
+            padding: 0 16px;
             display: grid;
             grid-template-columns: repeat(12, 1fr);
-            gap: 20px;
+            gap: 16px;
         }
 
         /* Glassmorphism Card Style */
         .glass-card {
-            background: rgba(10, 15, 26, 0.82);
+            background: rgba(10, 15, 26, 0.85);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border-radius: 16px;
-            padding: 22px;
+            border-radius: 14px;
+            padding: 18px;
             border: 1px solid rgba(255, 255, 255, 0.08);
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
         }
@@ -161,26 +165,26 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 16px;
-            padding-bottom: 12px;
+            margin-bottom: 14px;
+            padding-bottom: 10px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .card-header h2, .card-header h3 {
-            font-size: 0.95rem;
+            font-size: 0.88rem;
             font-weight: 800;
-            letter-spacing: 1px;
+            letter-spacing: 0.8px;
             color: #ffffff;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             text-transform: uppercase;
         }
 
         .card-header h2::before, .card-header h3::before {
             content: '';
-            width: 4px;
-            height: 16px;
+            width: 3px;
+            height: 14px;
             background: #FFC72C;
             border-radius: 2px;
         }
@@ -188,15 +192,15 @@
         /* Status & Telemetry Card */
         .status-card-container {
             grid-column: span 12;
-            border-left: 6px solid #4CAF50;
+            border-left: 5px solid #4CAF50;
             transition: border-color 0.4s ease;
         }
 
         .status-main-display {
-            font-size: 1.25rem;
+            font-size: 1.1rem;
             font-weight: 800;
-            margin-bottom: 14px;
-            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            letter-spacing: 0.3px;
         }
 
         .status-secure { color: #00E676; text-shadow: 0 0 10px rgba(0, 230, 118, 0.3); }
@@ -206,27 +210,26 @@
         @keyframes blink { 50% { opacity: 0.25; } }
 
         .telemetry-grid {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
         }
 
         .telemetry-item {
             background: rgba(255, 255, 255, 0.04);
             border: 1px solid rgba(255, 255, 255, 0.08);
-            padding: 10px 16px;
+            padding: 10px 12px;
             border-radius: 8px;
-            font-size: 0.85rem;
+            font-size: 0.78rem;
             color: #cbd5e1;
             font-weight: 600;
-            flex: 1;
-            min-width: 150px;
         }
 
         .telemetry-item b {
             color: #FFC72C;
-            font-size: 1rem;
-            margin-left: 6px;
+            font-size: 0.95rem;
+            display: block;
+            margin-top: 4px;
         }
 
         /* Map Card Container */
@@ -235,19 +238,18 @@
         }
 
         #map {
-            height: 460px;
+            height: 380px;
             width: 100%;
-            border-radius: 10px;
+            border-radius: 8px;
             border: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow: 0 10px 30px rgba(0,0,0,0.6);
         }
 
-        /* Leaflet Dark Popup Styling */
+        /* Leaflet Popup Styling */
         .leaflet-popup-content-wrapper, .leaflet-popup-tip {
             background: #0f172a !important;
             color: #ffffff !important;
             border: 1px solid rgba(255, 199, 44, 0.4) !important;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5) !important;
         }
 
         /* Incident Log Table Styling */
@@ -255,26 +257,33 @@
             grid-column: span 12;
         }
 
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
             text-align: left;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
+            white-space: nowrap;
         }
 
         th {
             background: rgba(255, 255, 255, 0.03);
             color: #64748b;
-            padding: 12px 14px;
+            padding: 10px 12px;
             font-weight: 800;
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
             text-transform: uppercase;
-            font-size: 0.72rem;
-            letter-spacing: 1px;
+            font-size: 0.7rem;
+            letter-spacing: 0.8px;
         }
 
         td {
-            padding: 12px 14px;
+            padding: 10px 12px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.04);
             color: #cbd5e1;
         }
@@ -283,9 +292,52 @@
             background-color: rgba(255, 255, 255, 0.02);
         }
 
-        @media (max-width: 640px) {
-            header { flex-direction: column; gap: 12px; align-items: flex-start; }
-            .header-actions { width: 100%; justify-content: space-between; }
+        /* Mobile Breakpoint Adjustments (< 768px) */
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 12px;
+                align-items: stretch;
+                padding: 12px 16px;
+            }
+
+            .header-brand {
+                justify-content: flex-start;
+            }
+
+            .header-actions {
+                justify-content: space-between;
+                width: 100%;
+            }
+
+            .header-title h1 {
+                font-size: 0.82rem;
+            }
+
+            .dashboard-container {
+                padding: 0 10px;
+                gap: 12px;
+                margin: 12px auto;
+            }
+
+            .glass-card {
+                padding: 14px;
+            }
+
+            .telemetry-grid {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+
+            .telemetry-item b {
+                display: inline;
+                margin-top: 0;
+                margin-left: 6px;
+            }
+
+            #map {
+                height: 300px;
+            }
         }
     </style>
 </head>
@@ -348,21 +400,23 @@
             <div class="card-header">
                 <h3>SYSTEM INCIDENT &amp; AUDIT LOG</h3>
             </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Log Key / Record</th>
-                        <th>Node ID</th>
-                        <th>Event Status</th>
-                        <th>Telemetry Summary</th>
-                    </tr>
-                </thead>
-                <tbody id="log-body">
-                    <tr>
-                        <td colspan="4" style="color: #64748b; text-align: center; padding: 18px;">Fetching permanent logs from database...</td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Log Key / Record</th>
+                            <th>Node ID</th>
+                            <th>Event Status</th>
+                            <th>Telemetry Summary</th>
+                        </tr>
+                    </thead>
+                    <tbody id="log-body">
+                        <tr>
+                            <td colspan="4" style="color: #64748b; text-align: center; padding: 18px;">Fetching permanent logs from database...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
     </div>
@@ -392,9 +446,9 @@
             constructor() {
                 this.x = Math.random() * canvas.width;
                 this.y = Math.random() * canvas.height;
-                this.vx = (Math.random() - 0.5) * 0.8;
-                this.vy = (Math.random() - 0.5) * 0.8;
-                this.radius = Math.random() * 1.8 + 1;
+                this.vx = (Math.random() - 0.5) * 0.6;
+                this.vy = (Math.random() - 0.5) * 0.6;
+                this.radius = Math.random() * 1.5 + 1;
             }
 
             update() {
@@ -407,12 +461,12 @@
             draw() {
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(255, 199, 44, 0.4)';
+                ctx.fillStyle = 'rgba(255, 199, 44, 0.35)';
                 ctx.fill();
             }
         }
 
-        for (let i = 0; i < 45; i++) particles.push(new Particle());
+        for (let i = 0; i < 30; i++) particles.push(new Particle());
 
         function animateParticles() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -422,12 +476,12 @@
                 for (let j = index + 1; j < particles.length; j++) {
                     const p2 = particles[j];
                     const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
-                    if (dist < 120) {
+                    if (dist < 100) {
                         ctx.beginPath();
                         ctx.moveTo(p.x, p.y);
                         ctx.lineTo(p2.x, p2.y);
-                        ctx.strokeStyle = `rgba(255, 199, 44, ${0.22 * (1 - dist / 120)})`;
-                        ctx.lineWidth = 0.8;
+                        ctx.strokeStyle = `rgba(255, 199, 44, ${0.18 * (1 - dist / 100)})`;
+                        ctx.lineWidth = 0.6;
                         ctx.stroke();
                     }
                 }
@@ -543,7 +597,7 @@
                     else if (log.status !== "SECURE") statusBadgeColor = "#FF5252";
 
                     row.innerHTML = `
-                        <td style="color:#64748b; font-family: monospace; font-size: 0.82rem;">${key}</td>
+                        <td style="color:#64748b; font-family: monospace; font-size: 0.78rem;">${key}</td>
                         <td><b>${log.node_id || 'Node 01'}</b></td>
                         <td style="color:${statusBadgeColor}; font-weight:bold;">${log.status}</td>
                         <td style="color:#cbd5e1;">ADC: ${log.adc_value ?? '--'} | Tamper: ${log.tamper_confidence ?? 0}% | Shake: ${log.shake_confidence ?? 0}%</td>
