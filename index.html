@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KTMB Trackside Security Dashboard</title>
+    
+    <!-- Leaflet CSS for Map Styling -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #121212; color: #fff; margin: 0; padding: 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #333; padding-bottom: 10px; }
+        
+        .status-card { background: #1e1e1e; padding: 18px; border-radius: 8px; margin-bottom: 20px; font-size: 1.2rem; border-left: 6px solid #4CAF50; transition: all 0.3s ease; }
+        
+        /* Status Colors */
+        .status-secure { color: #4CAF50; font-weight: bold; }
+        .status-warning { color: #FF9800; font-weight: bold; }
+        .status-alarm { color: #FF5252; font-weight: bold; animation: blink 0.8s infinite; }
+
+        .telemetry-grid { display: flex; gap: 15px; margin-top: 10px; font-size: 0.95rem; color: #aaa; }
+        .telemetry-item { background: #2a2a2a; padding: 8px 12px; border-radius: 5px; }
+
+        #map { height: 480px; width: 100%; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.6); margin-bottom: 25px; }
+        
+        /* Incident Log Table Styling */
+        .log-section { background: #1e1e1e; padding: 18px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
+        .log-section h3 { margin-top: 0; margin-bottom: 15px; font-size: 1.1rem; color: #ddd; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.92rem; }
+        th { background: #2a2a2a; color: #bbb; padding: 10px 12px; font-weight: 600; border-bottom: 2px solid #333; }
+        td { padding: 10px 12px; border-bottom: 1px solid #282828; }
+        tr:hover { background-color: #262626; }
+
+        @keyframes blink { 50% { opacity: 0.2; } }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h2>KTMB Anti-Theft AI Monitor (S-ICCT)</h2>
+        <div>Sector: <b>Perak North Track Run</b></div>
+    </div>
+
+    <div id="card-box" class="status-card">
+        Node 01 Status: <span id="node-status" class="status-secure">CONNECTING TO CLOUD...</span>
+        <div class="telemetry-grid">
+            <div class="telemetry-item">ADC Reading: <b id="adc-val" style="color:#fff;">--</b></div>
+            <div class="telemetry-item">Tamper Conf: <b id="tamper-val" style="color:#fff;">--%</b></div>
+            <div class="telemetry-item">Shake Conf: <b id="shake-val" style="color:#fff;">--%</b></div>
+        </div>
+    </div>
+
+    <div id="map"></div>
+
+    <div class="log-section">
+        <h3>System Incident & Audit Log</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Node ID</th>
+                    <th>Event Status</th>
+                    <th>Telemetry Summary</th>
+                </tr>
+            </thead>
+            <tbody id="log-body">
+                <tr>
+                    <td colspan="4" style="color: #666; text-align: center; padding: 15px;">Waiting for cloud data stream...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Leaflet Map Library -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <script>
+        // 1. Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCTHW_s2SYe3KbDvDPWuyg5vHEbLv-MUnA",
+            databaseURL: "https://fyp-sicct-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "fyp-sicct",
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // Target coordinates
+        const initialLat = 4.610258;
+        const initialLng = 101.088256;
+
+        // 2. Initialize Leaflet Map centered over target coordinates
+        var map = L.map('map').setView([initialLat, initialLng], 16);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+
+        var nodeMarker = L.marker([initialLat, initialLng]).addTo(map);
+        nodeMarker.bindPopup("<b>Node 01: Kapar Sector</b><br>Connecting...").openPopup();
+
+        // 3. Variables to track log changes
+        let lastLoggedStatus = null;
+        let isFirstDataLoad = true;
+
+        // 4. Listen to Realtime Database Updates
+        const nodeRef = database.ref('ktmb_node_01');
+        nodeRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                const statusElement = document.getElementById('node-status');
+                const cardBox = document.getElementById('card-box');
+                
+                // Update Telemetry Metrics
+                document.getElementById('adc-val').innerText = data.adc_value ?? '--';
+                document.getElementById('tamper-val').innerText = (data.tamper_confidence ?? 0) + '%';
+                document.getElementById('shake-val').innerText = (data.shake_confidence ?? 0) + '%';
+
+                statusElement.innerText = data.status;
+
+                // Move Marker Position dynamically if lat/lng received from ESP32
+                if (data.lat && data.lng) {
+                    nodeMarker.setLatLng([data.lat, data.lng]);
+                }
+
+                // UI State Evaluation
+                if (data.status === "SECURE") {
+                    statusElement.className = "status-secure";
+                    cardBox.style.borderLeftColor = "#4CAF50";
+                    nodeMarker.bindPopup("<b>Node 01: Kapar Sector</b><br>Status: <span style='color:green;font-weight:bold;'>SECURE</span>");
+                
+                } else if (data.status === "PLATFORM SHAKE") {
+                    statusElement.className = "status-warning";
+                    cardBox.style.borderLeftColor = "#FF9800";
+                    nodeMarker.bindPopup("<b>Node 01: Kapar Sector</b><br>Status: <span style='color:orange;font-weight:bold;'>VIBRATION WARNING</span>").openPopup();
+                
+                } else {
+                    // Critical Alerts: TAMPER DETECTED or LINE CUT DETECTED
+                    statusElement.className = "status-alarm";
+                    cardBox.style.borderLeftColor = "#FF5252";
+                    nodeMarker.bindPopup("<b style='color:red;'>🚨 SECURITY ALERT!</b><br>Threat: <b>" + data.status + "</b>").openPopup();
+                }
+
+                // Append Event to Incident Audit Log Table on State Change
+                if (data.status !== lastLoggedStatus) {
+                    lastLoggedStatus = data.status;
+                    const logBody = document.getElementById('log-body');
+                    
+                    if (isFirstDataLoad) {
+                        logBody.innerHTML = ''; // Clear placeholder text on first real packet
+                        isFirstDataLoad = false;
+                    }
+
+                    const row = document.createElement('tr');
+                    const timeStr = new Date().toLocaleTimeString();
+
+                    let statusBadgeColor = "#4CAF50";
+                    if (data.status === "PLATFORM SHAKE") statusBadgeColor = "#FF9800";
+                    else if (data.status !== "SECURE") statusBadgeColor = "#FF5252";
+
+                    row.innerHTML = `
+                        <td style="color:#aaa;">${timeStr}</td>
+                        <td><b>Node 01</b></td>
+                        <td style="color:${statusBadgeColor}; font-weight:bold;">${data.status}</td>
+                        <td style="color:#bbb;">ADC: ${data.adc_value ?? '--'} | Tamper: ${data.tamper_confidence ?? 0}% | Shake: ${data.shake_confidence ?? 0}%</td>
+                    `;
+
+                    logBody.insertBefore(row, logBody.firstChild); // Keep latest logs at top
+                }
+            }
+        });
+    </script>
+</body>
+</html>
