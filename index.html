@@ -104,7 +104,7 @@
         .header-actions {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             flex-shrink: 0;
         }
 
@@ -118,6 +118,27 @@
             border: 1px solid rgba(255, 255, 255, 0.08);
             font-weight: 700;
             white-space: nowrap;
+        }
+
+        .btn-audio {
+            background: rgba(255, 199, 44, 0.15);
+            border: 1px solid rgba(255, 199, 44, 0.4);
+            color: #FFC72C;
+            padding: 7px 12px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        .btn-audio.muted {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #64748b;
         }
 
         .btn-logout {
@@ -189,6 +210,40 @@
             border-radius: 2px;
         }
 
+        .card-header-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-action-sm {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #cbd5e1;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.7rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.25s ease;
+        }
+
+        .btn-action-sm:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+        }
+
+        .btn-danger-sm {
+            background: rgba(255, 107, 107, 0.15);
+            border: 1px solid rgba(255, 107, 107, 0.4);
+            color: #ff6b6b;
+        }
+
+        .btn-danger-sm:hover {
+            background: rgba(255, 107, 107, 0.3);
+            color: #ffffff;
+        }
+
         /* Status & Telemetry Card */
         .status-card-container {
             grid-column: span 12;
@@ -211,7 +266,7 @@
 
         .telemetry-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 10px;
         }
 
@@ -308,6 +363,7 @@
             .header-actions {
                 justify-content: space-between;
                 width: 100%;
+                flex-wrap: wrap;
             }
 
             .header-title h1 {
@@ -363,6 +419,7 @@
             <div class="myt-clock">
                 MYT: <span id="clock-display" style="color: #FFC72C;">--:--:--</span>
             </div>
+            <button id="audio-toggle-btn" class="btn-audio">🔊 Sound: ON</button>
             <button id="logout-btn" class="btn-logout">Sign Out</button>
         </div>
     </header>
@@ -382,6 +439,7 @@
 
             <div class="telemetry-grid">
                 <div class="telemetry-item">ADC Reading: <b id="adc-val">--</b></div>
+                <div class="telemetry-item">Power Status: <b id="power-val">--</b></div>
                 <div class="telemetry-item">Tamper Conf: <b id="tamper-val">--%</b></div>
                 <div class="telemetry-item">Shake Conf: <b id="shake-val">--%</b></div>
             </div>
@@ -399,6 +457,11 @@
         <div class="glass-card log-section">
             <div class="card-header">
                 <h3>SYSTEM INCIDENT &amp; AUDIT LOG</h3>
+                <div class="card-header-actions">
+                    <button id="download-csv-btn" class="btn-action-sm">CSV</button>
+                    <button id="download-pdf-btn" class="btn-action-sm">PDF</button>
+                    <button id="clear-logs-btn" class="btn-action-sm btn-danger-sm">Clear</button>
+                </div>
             </div>
             <div class="table-responsive">
                 <table>
@@ -425,6 +488,10 @@
     <!-- Leaflet Map Library -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
+    <!-- jsPDF & AutoTable Libraries for PDF Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -506,41 +573,77 @@
         setInterval(updateMalaysiaClock, 1000);
         updateMalaysiaClock();
 
-        // Helper function to format timestamps into structured Date, Time, and Duration
-        function formatLogMetadata(log, key) {
-            let timestampMs = null;
+        // Audio Alarm System using Web Audio API
+        let audioMuted = false;
+        let audioCtx = null;
+        let alarmOscillator = null;
 
-            // Check if log contains an explicit timestamp property (e.g. timestamp or time)
-            if (log.timestamp) {
-                timestampMs = typeof log.timestamp === 'number' ? log.timestamp : new Date(log.timestamp).getTime();
-            } else if (log.time) {
-                timestampMs = new Date(log.time).getTime();
+        document.getElementById('audio-toggle-btn').addEventListener('click', () => {
+            audioMuted = !audioMuted;
+            const btn = document.getElementById('audio-toggle-btn');
+            if (audioMuted) {
+                btn.innerText = "🔇 Sound: OFF";
+                btn.classList.add('muted');
+                stopAlarmSound();
             } else {
-                // Fallback attempt: Parse Firebase push key if it contains timestamp components, 
-                // or use current client time if completely absent
-                timestampMs = Date.now();
+                btn.innerText = "🔊 Sound: ON";
+                btn.classList.remove('muted');
             }
+        });
 
+        function playAlarmSound() {
+            if (audioMuted) return;
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            if (!alarmOscillator) {
+                alarmOscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                alarmOscillator.type = 'sawtooth';
+                alarmOscillator.frequency.setValueAtTime(750, audioCtx.currentTime);
+                
+                setInterval(() => {
+                    if (alarmOscillator && audioCtx) {
+                        alarmOscillator.frequency.setValueAtTime(550, audioCtx.currentTime);
+                        setTimeout(() => {
+                            if (alarmOscillator && audioCtx) alarmOscillator.frequency.setValueAtTime(850, audioCtx.currentTime);
+                        }, 300);
+                    }
+                }, 600);
+
+                gainNode.gain.setValueAtTime(0.12, audioCtx.currentTime);
+                alarmOscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                alarmOscillator.start();
+            }
+        }
+
+        function stopAlarmSound() {
+            if (alarmOscillator) {
+                try {
+                    alarmOscillator.stop();
+                    alarmOscillator.disconnect();
+                } catch(e) {}
+                alarmOscillator = null;
+            }
+        }
+
+        // Helper function to format timestamps into structured Date, Time, and Duration
+        function formatLogMetadata(log) {
+            let timestampMs = log.timestamp ? Number(log.timestamp) : Date.now();
             const eventDate = new Date(timestampMs);
+            
             const dateStr = eventDate.toLocaleDateString('en-GB', { timeZone: 'Asia/Kuala_Lumpur', day: '2-digit', month: '2-digit', year: 'numeric' });
             const timeStr = eventDate.toLocaleTimeString('en-GB', { timeZone: 'Asia/Kuala_Lumpur', hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' });
             
-            // Format duration if stored (e.g., log.duration in seconds or ms), otherwise compute from start/end or show indicator
-            let durationStr = "--";
-            if (log.duration) {
-                const durSec = Number(log.duration);
-                if (durSec < 60) durationStr = `${durSec}s`;
-                else durationStr = `${(durSec / 60).toFixed(1)}m`;
-            } else if (log.start_time && log.end_time) {
-                const diffSec = Math.round((new Date(log.end_time) - new Date(log.start_time)) / 1000);
-                durationStr = diffSec < 60 ? `${diffSec}s` : `${(diffSec / 60).toFixed(1)}m`;
-            } else if (log.status === "SECURE") {
-                durationStr = "Normal";
-            } else {
-                durationStr = "Active / Ongoing";
-            }
+            let durationStr = log.duration ? log.duration : "--";
 
             return {
+                rawDate: dateStr,
+                rawTime: timeStr,
                 dateTimeDisplay: `${dateStr} <span style="color:#64748b; font-size:0.72rem; display:block;">${timeStr}</span>`,
                 durationDisplay: durationStr
             };
@@ -575,6 +678,93 @@
             });
         });
 
+        // Clear Logs Handler
+        document.getElementById('clear-logs-btn').addEventListener('click', () => {
+            if (confirm("Are you sure you want to clear all permanent system logs?")) {
+                database.ref('logs').remove()
+                    .then(() => console.log("Logs cleared."))
+                    .catch((error) => console.error(error));
+            }
+        });
+
+        // Download Logs as CSV Handler (Split into independent Date and Time columns to avoid Excel ######)
+        let cachedLogsData = null;
+        document.getElementById('download-csv-btn').addEventListener('click', () => {
+            if (!cachedLogsData) {
+                alert("No log data available to download.");
+                return;
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,Date,Time,Node ID,Status,Duration,ADC Value,Tamper Confidence,Shake Confidence\n";
+            
+            Object.keys(cachedLogsData).forEach((key) => {
+                const log = cachedLogsData[key];
+                const meta = formatLogMetadata(log);
+                const row = [
+                    `"${meta.rawDate}"`,
+                    `"${meta.rawTime}"`,
+                    log.node_id || 'Node 01',
+                    `"${log.status}"`,
+                    `"${meta.durationDisplay}"`,
+                    log.adc_value ?? '--',
+                    `${log.tamper_confidence ?? 0}%`,
+                    `${log.shake_confidence ?? 0}%`
+                ];
+                csvContent += row.join(",") + "\n";
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `S-ICCT_Audit_Logs_${new Date().toISOString().slice(0,10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+
+        // Download Logs as PDF Handler for Mobile & Desktop Users
+        document.getElementById('download-pdf-btn').addEventListener('click', () => {
+            if (!cachedLogsData) {
+                alert("No log data available to export.");
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            doc.setFontSize(14);
+            doc.setTextColor(20, 30, 50);
+            doc.text("S-ICCT System Incident & Audit Report", 14, 15);
+            
+            doc.setFontSize(9);
+            doc.setTextColor(100, 110, 120);
+            doc.text(`Generated on: ${new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kuala_Lumpur' })} (MYT)`, 14, 22);
+
+            const tableRows = [];
+            Object.keys(cachedLogsData).reverse().forEach((key) => {
+                const log = cachedLogsData[key];
+                const meta = formatLogMetadata(log);
+                tableRows.push([
+                    `${meta.rawDate} ${meta.rawTime}`,
+                    log.node_id || 'Node 01',
+                    log.status,
+                    meta.durationDisplay,
+                    `ADC: ${log.adc_value ?? '--'} | Pwr: ${log.power_source ?? 'USB'} (${log.voltage ?? '5.0'}V) | T: ${log.tamper_confidence ?? 0}%`
+                ]);
+            });
+
+            doc.autoTable({
+                startY: 28,
+                head: [['Date & Time', 'Node', 'Status', 'Duration', 'Telemetry Summary']],
+                body: tableRows,
+                theme: 'grid',
+                headStyles: { fillColor: [15, 23, 42], textColor: [255, 199, 44] },
+                styles: { fontSize: 8, cellPadding: 3 },
+            });
+
+            doc.save(`S-ICCT_Report_${new Date().toISOString().slice(0,10)}.pdf`);
+        });
+
         // 4. Leaflet Map Initialization
         const initialLat = 4.610258;
         const initialLng = 101.088256;
@@ -594,6 +784,7 @@
                 const cardBox = document.getElementById('card-box');
                 
                 document.getElementById('adc-val').innerText = data.adc_value ?? '--';
+                document.getElementById('power-val').innerText = data.power_source ? `${data.power_source} (${data.voltage}V)` : '--';
                 document.getElementById('tamper-val').innerText = (data.tamper_confidence ?? 0) + '%';
                 document.getElementById('shake-val').innerText = (data.shake_confidence ?? 0) + '%';
 
@@ -607,27 +798,30 @@
                     statusElement.className = "status-secure";
                     cardBox.style.borderLeftColor = "#00E676";
                     nodeMarker.bindPopup("<b>Node 01: Perak North Sector</b><br>Status: <span style='color:#00E676;font-weight:bold;'>SECURE</span>");
-                
+                    stopAlarmSound();
                 } else if (data.status === "PLATFORM SHAKE") {
                     statusElement.className = "status-warning";
                     cardBox.style.borderLeftColor = "#FF9800";
                     nodeMarker.bindPopup("<b>Node 01: Perak North Sector</b><br>Status: <span style='color:#FF9800;font-weight:bold;'>VIBRATION WARNING</span>").openPopup();
-                
+                    stopAlarmSound();
                 } else {
                     statusElement.className = "status-alarm";
                     cardBox.style.borderLeftColor = "#FF5252";
                     nodeMarker.bindPopup("<b style='color:#FF5252;'>🚨 SECURITY ALERT!</b><br>Threat: <b>" + data.status + "</b>").openPopup();
+                    playAlarmSound();
                 }
             }
         });
 
-        // 6. Permanent Database Incident Log Fetcher with Date, Time, and Duration columns
-        const logsRef = database.ref('logs').limitToLast(15);
+        // 6. Permanent Database Incident Log Fetcher
+        const logsRef = database.ref('logs').limitToLast(25);
         logsRef.on('value', (snapshot) => {
             const logBody = document.getElementById('log-body');
             logBody.innerHTML = '';
 
             const logs = snapshot.val();
+            cachedLogsData = logs;
+
             if (logs) {
                 Object.keys(logs).reverse().forEach((key) => {
                     const log = logs[key];
@@ -637,14 +831,14 @@
                     if (log.status === "PLATFORM SHAKE") statusBadgeColor = "#FF9800";
                     else if (log.status !== "SECURE") statusBadgeColor = "#FF5252";
 
-                    const meta = formatLogMetadata(log, key);
+                    const meta = formatLogMetadata(log);
 
                     row.innerHTML = `
                         <td style="font-family: monospace; font-size: 0.78rem; color:#e2e8f0;">${meta.dateTimeDisplay}</td>
                         <td><b>${log.node_id || 'Node 01'}</b></td>
                         <td style="color:${statusBadgeColor}; font-weight:bold;">${log.status}</td>
                         <td style="color:#FFC72C; font-family: monospace; font-weight: 600;">${meta.durationDisplay}</td>
-                        <td style="color:#cbd5e1;">ADC: ${log.adc_value ?? '--'} | Tamper: ${log.tamper_confidence ?? 0}% | Shake: ${log.shake_confidence ?? 0}%</td>
+                        <td style="color:#cbd5e1;">ADC: ${log.adc_value ?? '--'} | Pwr: ${log.power_source ?? 'USB'} (${log.voltage ?? '5.0'}V) | Tamper: ${log.tamper_confidence ?? 0}%</td>
                     `;
 
                     logBody.appendChild(row);
