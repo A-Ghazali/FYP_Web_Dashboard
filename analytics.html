@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terminal Arahan KTMB - Analisis S-ICCT</title>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            color: #1e293b;
+            background-color: #f1f5f9;
+            min-height: 100vh;
+            padding-bottom: 40px;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 24px;
+            background: #ffffff;
+            border-bottom: 1px solid #cbd5e1;
+            border-top: 4px solid #FFC72C;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .header-brand { display: flex; align-items: center; gap: 14px; }
+        .logo-container { background: #ffffff; padding: 6px 10px; border-radius: 6px; border: 1px solid #e2e8f0; }
+        .ktm-logo { height: 28px; width: auto; }
+        .header-title h1 { font-size: 0.95rem; font-weight: 800; color: #0f172a; }
+        .header-title span { font-size: 0.68rem; color: #b45309; font-weight: 800; text-transform: uppercase; }
+        .nav-links { display: flex; gap: 10px; }
+        .nav-btn {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            color: #334155;
+            padding: 7px 12px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            cursor: pointer;
+            text-decoration: none;
+            text-transform: uppercase;
+        }
+        .nav-btn.active { background: #002B66; color: #ffffff; border-color: #002B66; }
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 20px auto;
+            padding: 0 16px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+        .card {
+            background: #ffffff;
+            border-radius: 14px;
+            padding: 20px;
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .card h2 { font-size: 0.9rem; font-weight: 800; color: #0f172a; text-transform: uppercase; margin-bottom: 14px; }
+        .chart-container { position: relative; height: 320px; width: 100%; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-brand">
+            <div class="logo-container"><img src="logo/Keretapi_Tanah_Melayu_Berhad_Logo.svg.png" alt="Logo KTMB" class="ktm-logo"></div>
+            <div class="header-title">
+                <h1>Analisis Data S-ICCT</h1>
+                <span>Graf Trend Sensor &amp; Pencerobohan Masa Nyata</span>
+            </div>
+        </div>
+        <div class="nav-links">
+            <a href="index.html" class="nav-btn">Papan Pemuka</a>
+            <a href="nodes.html" class="nav-btn">Nod</a>
+            <a href="analytics.html" class="nav-btn active">Analisis</a>
+            <a href="help.html" class="nav-btn">Bantuan</a>
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <div class="card">
+            <h2>Graf Tren Bacaan ADC &amp; Voltan Kabel Sinyal</h2>
+            <div class="chart-container">
+                <canvas id="adcChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const ctx = document.getElementById('adcChart').getContext('2d');
+        const adcChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['10:00', '10:05', '10:10', '10:15', '10:20', '10:25'],
+                datasets: [{
+                    label: 'Nilai ADC (Integriti Kabel)',
+                    data: [850, 852, 849, 851, 848, 850],
+                    borderColor: '#b45309',
+                    backgroundColor: 'rgba(180, 83, 9, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { grid: { color: '#e2e8f0' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

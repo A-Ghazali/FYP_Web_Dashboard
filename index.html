@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ms">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KTMB Command Terminal - Trackside Security Dashboard</title>
+    <title>Terminal Arahan KTMB - Papan Pemuka Keselamatan Landasan</title>
     
     <!-- Leaflet CSS for Map Styling -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -17,34 +17,22 @@
 
         body {
             font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
-            color: #ffffff;
+            color: #1e293b;
             min-height: 100vh;
             position: relative;
             overflow-x: hidden;
-            background-color: #03060d;
+            background-color: #f1f5f9;
             padding-bottom: 40px;
         }
 
-        /* Canvas Particle Grid Background */
-        #particle-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            pointer-events: none;
-        }
-
-        /* Ambient Dark Gradient Overlay */
+        /* Clean Light Mode Background */
         .bg-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: radial-gradient(circle at center, rgba(6, 12, 24, 0.6) 0%, rgba(2, 4, 8, 0.98) 100%),
-                        linear-gradient(to bottom, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.8));
+            background: #f1f5f9;
             z-index: -2;
         }
 
@@ -54,14 +42,13 @@
             justify-content: space-between;
             align-items: center;
             padding: 14px 24px;
-            background: rgba(10, 15, 26, 0.90);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background: #ffffff;
+            border-bottom: 1px solid #cbd5e1;
             border-top: 4px solid #FFC72C;
             position: sticky;
             top: 0;
             z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
 
         .header-brand {
@@ -76,8 +63,9 @@
             border-radius: 6px;
             display: flex;
             align-items: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
             flex-shrink: 0;
+            border: 1px solid #e2e8f0;
         }
 
         .ktm-logo {
@@ -89,13 +77,13 @@
             font-size: 0.95rem;
             font-weight: 800;
             letter-spacing: 0.5px;
-            color: #ffffff;
+            color: #0f172a;
             line-height: 1.25;
         }
 
         .header-title span {
             font-size: 0.68rem;
-            color: #FFC72C;
+            color: #b45309;
             font-weight: 800;
             letter-spacing: 1px;
             text-transform: uppercase;
@@ -108,22 +96,47 @@
             flex-shrink: 0;
         }
 
+        .nav-btn {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            color: #334155;
+            padding: 7px 12px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            cursor: pointer;
+            text-decoration: none;
+            text-transform: uppercase;
+            transition: all 0.25s ease;
+        }
+
+        .nav-btn:hover {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+
+        .nav-btn.active {
+            background: #002B66;
+            color: #ffffff;
+            border-color: #002B66;
+        }
+
         .myt-clock {
             font-family: monospace;
             font-size: 0.78rem;
-            color: #94a3b8;
-            background: rgba(255, 255, 255, 0.05);
+            color: #475569;
+            background: #f8fafc;
             padding: 6px 10px;
             border-radius: 6px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid #cbd5e1;
             font-weight: 700;
             white-space: nowrap;
         }
 
         .btn-audio {
-            background: rgba(255, 199, 44, 0.15);
-            border: 1px solid rgba(255, 199, 44, 0.4);
-            color: #FFC72C;
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            color: #b45309;
             padding: 7px 12px;
             border-radius: 6px;
             font-weight: 700;
@@ -136,15 +149,15 @@
         }
 
         .btn-audio.muted {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
             color: #64748b;
         }
 
         .btn-logout {
-            background: rgba(255, 107, 107, 0.15);
-            border: 1px solid rgba(255, 107, 107, 0.4);
-            color: #ff6b6b;
+            background: #fee2e2;
+            border: 1px solid #f87171;
+            color: #dc2626;
             padding: 7px 12px;
             border-radius: 6px;
             font-weight: 700;
@@ -157,8 +170,8 @@
         }
 
         .btn-logout:hover {
-            background: rgba(255, 107, 107, 0.3);
-            color: #ffffff;
+            background: #fecaca;
+            color: #991b1b;
         }
 
         /* Dashboard Container */
@@ -171,15 +184,13 @@
             gap: 16px;
         }
 
-        /* Glassmorphism Card Style */
+        /* Card Style for Light Mode */
         .glass-card {
-            background: rgba(10, 15, 26, 0.85);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            background: #ffffff;
             border-radius: 14px;
             padding: 18px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
 
         .card-header {
@@ -188,14 +199,14 @@
             align-items: center;
             margin-bottom: 14px;
             padding-bottom: 10px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            border-bottom: 1px solid #e2e8f0;
         }
 
         .card-header h2, .card-header h3 {
             font-size: 0.88rem;
             font-weight: 800;
             letter-spacing: 0.8px;
-            color: #ffffff;
+            color: #0f172a;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -206,7 +217,7 @@
             content: '';
             width: 3px;
             height: 14px;
-            background: #FFC72C;
+            background: #f59e0b;
             border-radius: 2px;
         }
 
@@ -216,9 +227,9 @@
         }
 
         .btn-action-sm {
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            color: #cbd5e1;
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            color: #334155;
             padding: 5px 10px;
             border-radius: 6px;
             font-weight: 700;
@@ -229,25 +240,25 @@
         }
 
         .btn-action-sm:hover {
-            background: rgba(255, 255, 255, 0.12);
-            color: #ffffff;
+            background: #e2e8f0;
+            color: #0f172a;
         }
 
         .btn-danger-sm {
-            background: rgba(255, 107, 107, 0.15);
-            border: 1px solid rgba(255, 107, 107, 0.4);
-            color: #ff6b6b;
+            background: #fee2e2;
+            border: 1px solid #f87171;
+            color: #dc2626;
         }
 
         .btn-danger-sm:hover {
-            background: rgba(255, 107, 107, 0.3);
-            color: #ffffff;
+            background: #fecaca;
+            color: #991b1b;
         }
 
         /* Status & Telemetry Card */
         .status-card-container {
             grid-column: span 12;
-            border-left: 5px solid #4CAF50;
+            border-left: 5px solid #16a34a;
             transition: border-color 0.4s ease;
         }
 
@@ -256,11 +267,12 @@
             font-weight: 800;
             margin-bottom: 12px;
             letter-spacing: 0.3px;
+            color: #0f172a;
         }
 
-        .status-secure { color: #00E676; text-shadow: 0 0 10px rgba(0, 230, 118, 0.3); }
-        .status-warning { color: #FF9800; text-shadow: 0 0 10px rgba(255, 152, 0, 0.3); }
-        .status-alarm { color: #FF5252; text-shadow: 0 0 10px rgba(255, 82, 82, 0.5); animation: blink 0.8s infinite; }
+        .status-secure { color: #16a34a; }
+        .status-warning { color: #d97706; }
+        .status-alarm { color: #dc2626; animation: blink 0.8s infinite; }
 
         @keyframes blink { 50% { opacity: 0.25; } }
 
@@ -271,17 +283,17 @@
         }
 
         .telemetry-item {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
             padding: 10px 12px;
             border-radius: 8px;
             font-size: 0.78rem;
-            color: #cbd5e1;
+            color: #475569;
             font-weight: 600;
         }
 
         .telemetry-item b {
-            color: #FFC72C;
+            color: #b45309;
             font-size: 0.95rem;
             display: block;
             margin-top: 4px;
@@ -296,15 +308,16 @@
             height: 380px;
             width: 100%;
             border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
 
-        /* Leaflet Popup Styling */
+        /* Leaflet Popup Styling for Light Mode */
         .leaflet-popup-content-wrapper, .leaflet-popup-tip {
-            background: #0f172a !important;
-            color: #ffffff !important;
-            border: 1px solid rgba(255, 199, 44, 0.4) !important;
+            background: #ffffff !important;
+            color: #0f172a !important;
+            border: 1px solid #cbd5e1 !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
         }
 
         /* Incident Log Table Styling */
@@ -327,11 +340,11 @@
         }
 
         th {
-            background: rgba(255, 255, 255, 0.03);
-            color: #64748b;
+            background: #f8fafc;
+            color: #475569;
             padding: 10px 12px;
             font-weight: 800;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            border-bottom: 2px solid #cbd5e1;
             text-transform: uppercase;
             font-size: 0.7rem;
             letter-spacing: 0.8px;
@@ -339,12 +352,12 @@
 
         td {
             padding: 10px 12px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-            color: #cbd5e1;
+            border-bottom: 1px solid #e2e8f0;
+            color: #334155;
         }
 
         tr:hover td {
-            background-color: rgba(255, 255, 255, 0.02);
+            background-color: #f8fafc;
         }
 
         /* Mobile Breakpoint Adjustments (< 768px) */
@@ -399,28 +412,30 @@
 </head>
 <body>
 
-    <!-- Canvas Particle Node Background -->
-    <canvas id="particle-canvas"></canvas>
     <div class="bg-overlay"></div>
 
     <!-- Navigation Header -->
     <header>
         <div class="header-brand">
             <div class="logo-container">
-                <img src="logo/Keretapi_Tanah_Melayu_Berhad_Logo.svg.png" alt="KTMB Logo" class="ktm-logo">
+                <img src="logo/Keretapi_Tanah_Melayu_Berhad_Logo.svg.png" alt="Logo KTMB" class="ktm-logo">
             </div>
             <div class="header-title">
-                <h1>Smart Cable Continuity and Anti Theft system for Critical Infrastructure (S-ICCT)</h1>
-                <span>Sector: <b>Perak North Track Run</b></span>
+                <h1>Sistem Kesinambungan Kabel Pintar dan Anti-Pencurian untuk Infrastruktur Kritikal (S-ICCT)</h1>
+                <span>Sektor: <b>Laluan Landasan Utara Perak</b></span>
             </div>
         </div>
 
         <div class="header-actions">
+            <a href="index.html" class="nav-btn active">Papan Pemuka</a>
+            <a href="nodes.html" class="nav-btn">Nod</a>
+            <a href="analytics.html" class="nav-btn">Analisis</a>
+            <a href="help.html" class="nav-btn">Bantuan</a>
             <div class="myt-clock">
-                MYT: <span id="clock-display" style="color: #FFC72C;">--:--:--</span>
+                MYT: <span id="clock-display" style="color: #b45309;">--:--:--</span>
             </div>
-            <button id="audio-toggle-btn" class="btn-audio">🔊 Sound: ON</button>
-            <button id="logout-btn" class="btn-logout">Sign Out</button>
+            <button id="audio-toggle-btn" class="btn-audio">🔊 Bunyi: HIDUP</button>
+            <button id="logout-btn" class="btn-logout">Log Keluar</button>
         </div>
     </header>
 
@@ -430,25 +445,25 @@
         <!-- Node Realtime Status & Telemetry Card -->
         <div id="card-box" class="glass-card status-card-container">
             <div class="card-header">
-                <h2>LIVE SENSOR NODE TELEMETRY</h2>
+                <h2>TELEMETRI NOD DERIA LANGSUNG</h2>
             </div>
             
             <div class="status-main-display">
-                Node 01 Status: <span id="node-status" class="status-secure">CONNECTING TO CLOUD...</span>
+                Status Nod 01: <span id="node-status" class="status-secure">MENYAMBUNG KE AWAN...</span>
             </div>
 
             <div class="telemetry-grid">
-                <div class="telemetry-item">ADC Reading: <b id="adc-val">--</b></div>
-                <div class="telemetry-item">Power Status: <b id="power-val">--</b></div>
-                <div class="telemetry-item">Tamper Conf: <b id="tamper-val">--%</b></div>
-                <div class="telemetry-item">Shake Conf: <b id="shake-val">--%</b></div>
+                <div class="telemetry-item">Bacaan ADC: <b id="adc-val">--</b></div>
+                <div class="telemetry-item">Status Kuasa: <b id="power-val">--</b></div>
+                <div class="telemetry-item">Keyakinan Pencerobohan: <b id="tamper-val">--%</b></div>
+                <div class="telemetry-item">Keyakinan Gegaran: <b id="shake-val">--%</b></div>
             </div>
         </div>
 
         <!-- GIS Trackside Leaflet Map Card -->
         <div class="glass-card map-card">
             <div class="card-header">
-                <h2>TRACKSIDE GEOLOCATION & GIS MAP</h2>
+                <h2>GEOLOKASI LANDASAN &amp; PETA GIS</h2>
             </div>
             <div id="map"></div>
         </div>
@@ -456,27 +471,27 @@
         <!-- Firebase Permanent Log Table -->
         <div class="glass-card log-section">
             <div class="card-header">
-                <h3>SYSTEM INCIDENT &amp; AUDIT LOG</h3>
+                <h3>LOG INSIDEN &amp; AUDIT SISTEM</h3>
                 <div class="card-header-actions">
                     <button id="download-csv-btn" class="btn-action-sm">CSV</button>
                     <button id="download-pdf-btn" class="btn-action-sm">PDF</button>
-                    <button id="clear-logs-btn" class="btn-action-sm btn-danger-sm">Clear</button>
+                    <button id="clear-logs-btn" class="btn-action-sm btn-danger-sm">Kosongkan</button>
                 </div>
             </div>
             <div class="table-responsive">
                 <table>
                     <thead>
                         <tr>
-                            <th>Date &amp; Time (MYT)</th>
-                            <th>Node ID</th>
-                            <th>Event Status</th>
-                            <th>Duration</th>
-                            <th>Telemetry Summary</th>
+                            <th>Tarikh &amp; Masa (MYT)</th>
+                            <th>ID Nod</th>
+                            <th>Status Insiden</th>
+                            <th>Tempoh</th>
+                            <th>Ringkasan Telemetri</th>
                         </tr>
                     </thead>
                     <tbody id="log-body">
                         <tr>
-                            <td colspan="5" style="color: #64748b; text-align: center; padding: 18px;">Fetching permanent logs from database...</td>
+                            <td colspan="5" style="color: #64748b; text-align: center; padding: 18px;">Mengambil log kekal daripada pangkalan data...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -498,67 +513,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
     <script>
-        // 1. Particle Node Canvas Background
-        const canvas = document.getElementById('particle-canvas');
-        const ctx = canvas.getContext('2d');
-        let particles = [];
-
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-
-        class Particle {
-            constructor() {
-                this.x = Math.random() * canvas.width;
-                this.y = Math.random() * canvas.height;
-                this.vx = (Math.random() - 0.5) * 0.6;
-                this.vy = (Math.random() - 0.5) * 0.6;
-                this.radius = Math.random() * 1.5 + 1;
-            }
-
-            update() {
-                this.x += this.vx;
-                this.y += this.vy;
-                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
-                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
-            }
-
-            draw() {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(255, 199, 44, 0.35)';
-                ctx.fill();
-            }
-        }
-
-        for (let i = 0; i < 30; i++) particles.push(new Particle());
-
-        function animateParticles() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles.forEach((p, index) => {
-                p.update();
-                p.draw();
-                for (let j = index + 1; j < particles.length; j++) {
-                    const p2 = particles[j];
-                    const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
-                    if (dist < 100) {
-                        ctx.beginPath();
-                        ctx.moveTo(p.x, p.y);
-                        ctx.lineTo(p2.x, p2.y);
-                        ctx.strokeStyle = `rgba(255, 199, 44, ${0.18 * (1 - dist / 100)})`;
-                        ctx.lineWidth = 0.6;
-                        ctx.stroke();
-                    }
-                }
-            });
-            requestAnimationFrame(animateParticles);
-        }
-        animateParticles();
-
-        // 2. Malaysia Time (MYT) Live Clock
+        // 1. Malaysia Time (MYT) Live Clock
         function updateMalaysiaClock() {
             const now = new Date();
             const options = {
@@ -582,11 +537,11 @@
             audioMuted = !audioMuted;
             const btn = document.getElementById('audio-toggle-btn');
             if (audioMuted) {
-                btn.innerText = "🔇 Sound: OFF";
+                btn.innerText = "🔇 Bunyi: TUTUP";
                 btn.classList.add('muted');
                 stopAlarmSound();
             } else {
-                btn.innerText = "🔊 Sound: ON";
+                btn.innerText = "🔊 Bunyi: HIDUP";
                 btn.classList.remove('muted');
             }
         });
@@ -649,7 +604,7 @@
             };
         }
 
-        // 3. Firebase Configuration & Auth Guard
+        // 2. Firebase Configuration & Auth Guard
         const firebaseConfig = {
             apiKey: "AIzaSyCTHW_s2SYe3KbDvDPWuyg5vHEbLv-MUnA",
             databaseURL: "https://fyp-sicct-default-rtdb.asia-southeast1.firebasedatabase.app",
@@ -680,22 +635,22 @@
 
         // Clear Logs Handler
         document.getElementById('clear-logs-btn').addEventListener('click', () => {
-            if (confirm("Are you sure you want to clear all permanent system logs?")) {
+            if (confirm("Adakah anda pasti mahu mengosongkan semua log sistem kekal?")) {
                 database.ref('logs').remove()
-                    .then(() => console.log("Logs cleared."))
+                    .then(() => console.log("Log dikosongkan."))
                     .catch((error) => console.error(error));
             }
         });
 
-        // Download Logs as CSV Handler (Split into independent Date and Time columns to avoid Excel ######)
+        // Download Logs as CSV Handler
         let cachedLogsData = null;
         document.getElementById('download-csv-btn').addEventListener('click', () => {
             if (!cachedLogsData) {
-                alert("No log data available to download.");
+                alert("Tiada data log tersedia untuk dimuat turun.");
                 return;
             }
 
-            let csvContent = "data:text/csv;charset=utf-8,Date,Time,Node ID,Status,Duration,ADC Value,Tamper Confidence,Shake Confidence\n";
+            let csvContent = "data:text/csv;charset=utf-8,Tarikh,Masa,ID Nod,Status,Tempoh,Nilai ADC,Keyakinan Pencerobohan,Keyakinan Gegaran\n";
             
             Object.keys(cachedLogsData).forEach((key) => {
                 const log = cachedLogsData[key];
@@ -716,16 +671,16 @@
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
             link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `S-ICCT_Audit_Logs_${new Date().toISOString().slice(0,10)}.csv`);
+            link.setAttribute("download", `Laporan_Audit_S-ICCT_${new Date().toISOString().slice(0,10)}.csv`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
         });
 
-        // Download Logs as PDF Handler for Mobile & Desktop Users
+        // Download Logs as PDF Handler
         document.getElementById('download-pdf-btn').addEventListener('click', () => {
             if (!cachedLogsData) {
-                alert("No log data available to export.");
+                alert("Tiada data log tersedia untuk dieksport.");
                 return;
             }
 
@@ -734,11 +689,11 @@
 
             doc.setFontSize(14);
             doc.setTextColor(20, 30, 50);
-            doc.text("S-ICCT System Incident & Audit Report", 14, 15);
+            doc.text("Laporan Insiden & Audit Sistem S-ICCT", 14, 15);
             
             doc.setFontSize(9);
             doc.setTextColor(100, 110, 120);
-            doc.text(`Generated on: ${new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kuala_Lumpur' })} (MYT)`, 14, 22);
+            doc.text(`Dijana pada: ${new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kuala_Lumpur' })} (MYT)`, 14, 22);
 
             const tableRows = [];
             Object.keys(cachedLogsData).reverse().forEach((key) => {
@@ -749,23 +704,23 @@
                     log.node_id || 'Node 01',
                     log.status,
                     meta.durationDisplay,
-                    `ADC: ${log.adc_value ?? '--'} | Pwr: ${log.power_source ?? 'USB'} (${log.voltage ?? '5.0'}V) | T: ${log.tamper_confidence ?? 0}%`
+                    `ADC: ${log.adc_value ?? '--'} | Kuasa: ${log.power_source ?? 'USB'} (${log.voltage ?? '5.0'}V) | T: ${log.tamper_confidence ?? 0}%`
                 ]);
             });
 
             doc.autoTable({
                 startY: 28,
-                head: [['Date & Time', 'Node', 'Status', 'Duration', 'Telemetry Summary']],
+                head: [['Tarikh & Masa', 'Nod', 'Status', 'Tempoh', 'Ringkasan Telemetri']],
                 body: tableRows,
                 theme: 'grid',
                 headStyles: { fillColor: [15, 23, 42], textColor: [255, 199, 44] },
                 styles: { fontSize: 8, cellPadding: 3 },
             });
 
-            doc.save(`S-ICCT_Report_${new Date().toISOString().slice(0,10)}.pdf`);
+            doc.save(`Laporan_S-ICCT_${new Date().toISOString().slice(0,10)}.pdf`);
         });
 
-        // 4. Leaflet Map Initialization
+        // 3. Leaflet Map Initialization
         const initialLat = 4.610258;
         const initialLng = 101.088256;
 
@@ -773,9 +728,9 @@
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
 
         var nodeMarker = L.marker([initialLat, initialLng]).addTo(map);
-        nodeMarker.bindPopup("<b>Node 01: Perak North Sector</b><br>Connecting to Cloud...").openPopup();
+        nodeMarker.bindPopup("<b>Nod 01: Sektor Utara Perak</b><br>Menyambung ke Awan...").openPopup();
 
-        // 5. Realtime Firebase Node Updates
+        // 4. Realtime Firebase Node Updates
         const nodeRef = database.ref('ktmb_node_01');
         nodeRef.on('value', (snapshot) => {
             const data = snapshot.val();
@@ -796,24 +751,24 @@
 
                 if (data.status === "SECURE") {
                     statusElement.className = "status-secure";
-                    cardBox.style.borderLeftColor = "#00E676";
-                    nodeMarker.bindPopup("<b>Node 01: Perak North Sector</b><br>Status: <span style='color:#00E676;font-weight:bold;'>SECURE</span>");
+                    cardBox.style.borderLeftColor = "#16a34a";
+                    nodeMarker.bindPopup("<b>Nod 01: Sektor Utara Perak</b><br>Status: <span style='color:#16a34a;font-weight:bold;'>SELAMAT (SECURE)</span>");
                     stopAlarmSound();
                 } else if (data.status === "PLATFORM SHAKE") {
                     statusElement.className = "status-warning";
-                    cardBox.style.borderLeftColor = "#FF9800";
-                    nodeMarker.bindPopup("<b>Node 01: Perak North Sector</b><br>Status: <span style='color:#FF9800;font-weight:bold;'>VIBRATION WARNING</span>").openPopup();
+                    cardBox.style.borderLeftColor = "#d97706";
+                    nodeMarker.bindPopup("<b>Nod 01: Sektor Utara Perak</b><br>Status: <span style='color:#d97706;font-weight:bold;'>AMARAN GEGARAN</span>").openPopup();
                     stopAlarmSound();
                 } else {
                     statusElement.className = "status-alarm";
-                    cardBox.style.borderLeftColor = "#FF5252";
-                    nodeMarker.bindPopup("<b style='color:#FF5252;'>🚨 SECURITY ALERT!</b><br>Threat: <b>" + data.status + "</b>").openPopup();
+                    cardBox.style.borderLeftColor = "#dc2626";
+                    nodeMarker.bindPopup("<b style='color:#dc2626;'>🚨 AMARAN KESELAMATAN!</b><br>Ancaman: <b>" + data.status + "</b>").openPopup();
                     playAlarmSound();
                 }
             }
         });
 
-        // 6. Permanent Database Incident Log Fetcher
+        // 5. Permanent Database Incident Log Fetcher
         const logsRef = database.ref('logs').limitToLast(25);
         logsRef.on('value', (snapshot) => {
             const logBody = document.getElementById('log-body');
@@ -827,24 +782,24 @@
                     const log = logs[key];
                     const row = document.createElement('tr');
                     
-                    let statusBadgeColor = "#00E676";
-                    if (log.status === "PLATFORM SHAKE") statusBadgeColor = "#FF9800";
-                    else if (log.status !== "SECURE") statusBadgeColor = "#FF5252";
+                    let statusBadgeColor = "#16a34a";
+                    if (log.status === "PLATFORM SHAKE") statusBadgeColor = "#d97706";
+                    else if (log.status !== "SECURE") statusBadgeColor = "#dc2626";
 
                     const meta = formatLogMetadata(log);
 
                     row.innerHTML = `
-                        <td style="font-family: monospace; font-size: 0.78rem; color:#e2e8f0;">${meta.dateTimeDisplay}</td>
+                        <td style="font-family: monospace; font-size: 0.78rem; color:#334155;">${meta.dateTimeDisplay}</td>
                         <td><b>${log.node_id || 'Node 01'}</b></td>
                         <td style="color:${statusBadgeColor}; font-weight:bold;">${log.status}</td>
-                        <td style="color:#FFC72C; font-family: monospace; font-weight: 600;">${meta.durationDisplay}</td>
-                        <td style="color:#cbd5e1;">ADC: ${log.adc_value ?? '--'} | Pwr: ${log.power_source ?? 'USB'} (${log.voltage ?? '5.0'}V) | Tamper: ${log.tamper_confidence ?? 0}%</td>
+                        <td style="color:#b45309; font-family: monospace; font-weight: 600;">${meta.durationDisplay}</td>
+                        <td style="color:#475569;">ADC: ${log.adc_value ?? '--'} | Kuasa: ${log.power_source ?? 'USB'} (${log.voltage ?? '5.0'}V) | Pencerobohan: ${log.tamper_confidence ?? 0}%</td>
                     `;
 
                     logBody.appendChild(row);
                 });
             } else {
-                logBody.innerHTML = '<tr><td colspan="5" style="color: #64748b; text-align: center; padding: 18px;">No permanent logs recorded yet.</td></tr>';
+                logBody.innerHTML = '<tr><td colspan="5" style="color: #64748b; text-align: center; padding: 18px;">Tiada log kekal direkodkan setakat ini.</td></tr>';
             }
         });
     </script>

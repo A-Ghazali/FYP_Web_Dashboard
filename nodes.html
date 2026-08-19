@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terminal Arahan KTMB - Pengurusan Nod S-ICCT</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            color: #1e293b;
+            background-color: #f1f5f9;
+            min-height: 100vh;
+            padding-bottom: 40px;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 24px;
+            background: #ffffff;
+            border-bottom: 1px solid #cbd5e1;
+            border-top: 4px solid #FFC72C;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .header-brand { display: flex; align-items: center; gap: 14px; }
+        .logo-container { background: #ffffff; padding: 6px 10px; border-radius: 6px; border: 1px solid #e2e8f0; }
+        .ktm-logo { height: 28px; width: auto; }
+        .header-title h1 { font-size: 0.95rem; font-weight: 800; color: #0f172a; }
+        .header-title span { font-size: 0.68rem; color: #b45309; font-weight: 800; text-transform: uppercase; }
+        .nav-links { display: flex; gap: 10px; }
+        .nav-btn {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            color: #334155;
+            padding: 7px 12px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            cursor: pointer;
+            text-decoration: none;
+            text-transform: uppercase;
+        }
+        .nav-btn.active { background: #002B66; color: #ffffff; border-color: #002B66; }
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 20px auto;
+            padding: 0 16px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 16px;
+        }
+        .node-card {
+            background: #ffffff;
+            border-radius: 14px;
+            padding: 20px;
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border-left: 5px solid #16a34a;
+        }
+        .node-card.warning { border-left-color: #d97706; }
+        .node-card.alarm { border-left-color: #dc2626; }
+        .node-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid #e2e8f0; }
+        .node-header h3 { font-size: 0.9rem; font-weight: 800; color: #0f172a; text-transform: uppercase; }
+        .node-status-badge { font-size: 0.75rem; font-weight: 700; padding: 3px 8px; border-radius: 4px; }
+        .badge-secure { background: #dcfce7; color: #16a34a; }
+        .badge-warning { background: #fef3c7; color: #d97706; }
+        .badge-alarm { background: #fee2e2; color: #dc2626; }
+        .node-details { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.8rem; color: #475569; }
+        .node-details div b { color: #b45309; display: block; margin-top: 2px; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-brand">
+            <div class="logo-container"><img src="logo/Keretapi_Tanah_Melayu_Berhad_Logo.svg.png" alt="Logo KTMB" class="ktm-logo"></div>
+            <div class="header-title">
+                <h1>Pengurusan Nod S-ICCT</h1>
+                <span>Status Perkakasan ESP32 Teragih</span>
+            </div>
+        </div>
+        <div class="nav-links">
+            <a href="index.html" class="nav-btn">Papan Pemuka</a>
+            <a href="nodes.html" class="nav-btn active">Nod</a>
+            <a href="analytics.html" class="nav-btn">Analisis</a>
+            <a href="help.html" class="nav-btn">Bantuan</a>
+        </div>
+    </header>
+
+    <div class="dashboard-container" id="nodes-grid">
+        <!-- Dinamik Dimuatkan Melalui Firebase -->
+        <div class="node-card">
+            <div class="node-header">
+                <h3>Nod 01 (Sektor Utama Perak)</h3>
+                <span class="node-status-badge badge-secure" id="n1-badge">MEMUATKAN...</span>
+            </div>
+            <div class="node-details">
+                <div>Bacaan ADC: <b id="n1-adc">--</b></div>
+                <div>Voltan Kuasa: <b id="n1-volt">--</b></div>
+                <div>Pencerobohan: <b id="n1-tamper">--%</b></div>
+                <div>Gegaran: <b id="n1-shake">--%</b></div>
+            </div>
+        </div>
+        <!-- Tambahan nod boleh dikembangkan di sini -->
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCTHW_s2SYe3KbDvDPWuyg5vHEbLv-MUnA",
+            databaseURL: "https://fyp-sicct-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "fyp-sicct",
+        };
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        database.ref('ktmb_node_01').on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                document.getElementById('n1-adc').innerText = data.adc_value ?? '--';
+                document.getElementById('n1-volt').innerText = (data.voltage ?? '5.0') + 'V (' + (data.power_source || 'USB') + ')';
+                document.getElementById('n1-tamper').innerText = (data.tamper_confidence ?? 0) + '%';
+                document.getElementById('n1-shake').innerText = (data.shake_confidence ?? 0) + '%';
+                
+                const badge = document.getElementById('n1-badge');
+                const card = badge.closest('.node-card');
+                badge.innerText = data.status;
+                
+                if(data.status === "SECURE") {
+                    badge.className = "node-status-badge badge-secure";
+                    card.className = "node-card";
+                } else if(data.status === "PLATFORM SHAKE") {
+                    badge.className = "node-status-badge badge-warning";
+                    card.className = "node-card warning";
+                } else {
+                    badge.className = "node-status-badge badge-alarm";
+                    card.className = "node-card alarm";
+                }
+            }
+        });
+    </script>
+</body>
+</html>

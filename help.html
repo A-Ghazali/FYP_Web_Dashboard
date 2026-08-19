@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terminal Arahan KTMB - Panduan Bantuan S-ICCT</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            color: #1e293b;
+            background-color: #f1f5f9;
+            min-height: 100vh;
+            padding-bottom: 40px;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 24px;
+            background: #ffffff;
+            border-bottom: 1px solid #cbd5e1;
+            border-top: 4px solid #FFC72C;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .header-brand { display: flex; align-items: center; gap: 14px; }
+        .logo-container { background: #ffffff; padding: 6px 10px; border-radius: 6px; border: 1px solid #e2e8f0; }
+        .ktm-logo { height: 28px; width: auto; }
+        .header-title h1 { font-size: 0.95rem; font-weight: 800; color: #0f172a; }
+        .header-title span { font-size: 0.68rem; color: #b45309; font-weight: 800; text-transform: uppercase; }
+        .nav-links { display: flex; gap: 10px; }
+        .nav-btn {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            color: #334155;
+            padding: 7px 12px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            cursor: pointer;
+            text-decoration: none;
+            text-transform: uppercase;
+        }
+        .nav-btn.active { background: #002B66; color: #ffffff; border-color: #002B66; }
+        .dashboard-container {
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 0 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .card {
+            background: #ffffff;
+            border-radius: 14px;
+            padding: 24px;
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .card h2 { font-size: 1rem; font-weight: 800; color: #0f172a; text-transform: uppercase; margin-bottom: 12px; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; }
+        .card p, .card li { font-size: 0.85rem; color: #475569; line-height: 1.6; margin-bottom: 10px; }
+        .card ul { padding-left: 20px; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-brand">
+            <div class="logo-container"><img src="logo/Keretapi_Tanah_Melayu_Berhad_Logo.svg.png" alt="Logo KTMB" class="ktm-logo"></div>
+            <div class="header-title">
+                <h1>Dokumentasi &amp; Bantuan</h1>
+                <span>Manual Operasi Sistem S-ICCT</span>
+            </div>
+        </div>
+        <div class="nav-links">
+            <a href="index.html" class="nav-btn">Papan Pemuka</a>
+            <a href="nodes.html" class="nav-btn">Nod</a>
+            <a href="analytics.html" class="nav-btn">Analisis</a>
+            <a href="help.html" class="nav-btn active">Bantuan</a>
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <div class="card">
+            <h2>1. Mengenai Sistem S-ICCT</h2>
+            <p>S-ICCT (Smart Cable Continuity and Anti-Theft System) ialah sistem pemantauan pintar berasaskan mikropengawal ESP32 dan pangkalan data awan untuk melindungi infrastruktur kabel telekomunikasi dan isyarat landasan KTMB daripada kecurian atau sabotaj.</p>
+        </div>
+
+        <div class="card">
+            <h2>2. Panduan Status Amaran</h2>
+            <ul>
+                <li><b>SECURE (SELAMAT):</b> Kabel berada dalam integriti penuh, tiada gangguan atau pencerobohan dikesan.</li>
+                <li><b>PLATFORM SHAKE (AMARAN GEGARAN):</b> Gegaran dikesan berhampiran landasan akibat pergerakan tren atau aktiviti luar biasa.</li>
+                <li><b>TAMPER DETECTED (PENCEROBOHAN):</b> Berlaku putusnya litar ADC atau cubaan potong kabel. Amaran audio akan berbunyi di terminal.</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>3. Tindakan Kecemasan Operator</h2>
+            <p>Jika amaran pencerobohan dicetuskan:</p>
+            <ul>
+                <li>Semak peta geolokasi GIS pada papan pemuka utama untuk mengenalpasti koordinat nod yang terjejas.</li>
+                <li>Rujuk log insiden bagi melihat tempoh dan nilai ADC terkini.</li>
+                <li>Hubungi unit keselamatan landasan berdekatan untuk pemeriksaan fizikal di Sektor Utara Perak.</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
