@@ -267,13 +267,12 @@
             }
         });
 
-        // Remote Actuator Command (Buzzer Test Ping)
+        // Remote Actuator Command (Buzzer Test Ping) - Updated to use .set()
         function triggerRemoteBuzzer() {
-            database.ref('ktmb_node_01/commands').update({
-                buzzer_test: Date.now()
-            }, (error) => {
+            database.ref('ktmb_node_01/commands/buzzer_test').set(Date.now(), (error) => {
                 const statusSpan = document.getElementById('node-buzzer-status');
                 if (!error) {
+                    statusSpan.style.color = "#16a34a";
                     statusSpan.innerText = "Arahan ping berjaya dihantar ke ESP32!";
                     setTimeout(() => { statusSpan.innerText = ""; }, 3000);
                 } else {
