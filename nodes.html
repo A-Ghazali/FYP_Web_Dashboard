@@ -31,7 +31,7 @@
         .ktm-logo { height: 28px; width: auto; }
         .header-title h1 { font-size: 0.95rem; font-weight: 800; color: #0f172a; }
         .header-title span { font-size: 0.68rem; color: #b45309; font-weight: 800; text-transform: uppercase; }
-        .nav-links { display: flex; gap: 10px; }
+        .nav-links { display: flex; gap: 10px; align-items: center; }
         .nav-btn {
             background: #f8fafc;
             border: 1px solid #cbd5e1;
@@ -45,32 +45,112 @@
             text-transform: uppercase;
         }
         .nav-btn.active { background: #002B66; color: #ffffff; border-color: #002B66; }
+
         .dashboard-container {
             max-width: 1400px;
             margin: 20px auto;
             padding: 0 16px;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            grid-template-columns: repeat(12, 1fr);
             gap: 16px;
         }
-        .node-card {
+
+        .card {
             background: #ffffff;
             border-radius: 14px;
             padding: 20px;
             border: 1px solid #cbd5e1;
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            border-left: 5px solid #16a34a;
+            grid-column: span 12;
         }
-        .node-card.warning { border-left-color: #d97706; }
-        .node-card.alarm { border-left-color: #dc2626; }
-        .node-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid #e2e8f0; }
-        .node-header h3 { font-size: 0.9rem; font-weight: 800; color: #0f172a; text-transform: uppercase; }
-        .node-status-badge { font-size: 0.75rem; font-weight: 700; padding: 3px 8px; border-radius: 4px; }
-        .badge-secure { background: #dcfce7; color: #16a34a; }
-        .badge-warning { background: #fef3c7; color: #d97706; }
-        .badge-alarm { background: #fee2e2; color: #dc2626; }
-        .node-details { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.8rem; color: #475569; }
-        .node-details div b { color: #b45309; display: block; margin-top: 2px; }
+
+        .card h2 {
+            font-size: 0.9rem;
+            font-weight: 800;
+            color: #0f172a;
+            text-transform: uppercase;
+            margin-bottom: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Node Grid & Cards */
+        .node-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 16px;
+        }
+
+        .node-item-card {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 16px;
+            border-left: 5px solid #002B66;
+        }
+
+        .node-item-card h3 {
+            font-size: 0.9rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .node-location {
+            font-size: 0.75rem;
+            color: #64748b;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .node-specs {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .spec-box {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            padding: 8px;
+            border-radius: 6px;
+        }
+
+        .spec-box .label { font-size: 0.65rem; font-weight: 700; color: #64748b; text-transform: uppercase; }
+        .spec-box .val { font-size: 0.9rem; font-weight: 800; color: #0f172a; margin-top: 2px; }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 800;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+        }
+        .status-secure { background: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0; }
+        .status-danger { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
+        .status-offline { background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; }
+
+        .btn-action {
+            background: #b45309;
+            color: white;
+            border: none;
+            padding: 7px 14px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            width: 100%;
+            transition: background 0.2s;
+        }
+        .btn-action:hover { background: #92400e; }
     </style>
 </head>
 <body>
@@ -79,7 +159,7 @@
             <div class="logo-container"><img src="logo/Keretapi_Tanah_Melayu_Berhad_Logo.svg.png" alt="Logo KTMB" class="ktm-logo"></div>
             <div class="header-title">
                 <h1>Pengurusan Nod S-ICCT</h1>
-                <span>Status Perkakasan ESP32 Teragih</span>
+                <span>Pemeriksaan Perkakasan &amp; Diagnostik Lapangan</span>
             </div>
         </div>
         <div class="nav-links">
@@ -90,26 +170,57 @@
         </div>
     </header>
 
-    <div class="dashboard-container" id="nodes-grid">
-        <!-- Dinamik Dimuatkan Melalui Firebase -->
-        <div class="node-card">
-            <div class="node-header">
-                <h3>Nod 01 (Sektor Utama Perak)</h3>
-                <span class="node-status-badge badge-secure" id="n1-badge">MEMUATKAN...</span>
-            </div>
-            <div class="node-details">
-                <div>Bacaan ADC: <b id="n1-adc">--</b></div>
-                <div>Voltan Kuasa: <b id="n1-volt">--</b></div>
-                <div>Pencerobohan: <b id="n1-tamper">--%</b></div>
-                <div>Gegaran: <b id="n1-shake">--%</b></div>
+    <div class="dashboard-container">
+        <div class="card">
+            <h2>
+                Inventori Nod Sektor Landasan Aktif
+                <span style="font-size: 0.75rem; font-weight: normal; color: #64748b;">Jumlah Nod Aktif: 1 / 1</span>
+            </h2>
+            <p style="font-size: 0.82rem; color: #334155; margin-bottom: 16px;">Pengurusan langsung perkakasan mikrokontroler ESP32, pemeriksaan sambungan penderia, dan arahan ujian diagnostik jauh (ping buzzer).</p>
+
+            <div class="node-grid">
+                <!-- Nod 01 Card -->
+                <div class="node-item-card">
+                    <h3>
+                        Nod 01 (ESP32-WROOM)
+                        <span id="node-status-badge" class="status-badge status-offline">MENUNGGU...</span>
+                    </h3>
+                    <span class="node-location">📍 Sektor Landasan Utara Perak (KM 45.2)</span>
+
+                    <div class="node-specs">
+                        <div class="spec-box">
+                            <div class="label">Nilai ADC Semasa</div>
+                            <div class="val" id="node-adc">----</div>
+                        </div>
+                        <div class="spec-box">
+                            <div class="label">Status AI (TinyML)</div>
+                            <div class="val" id="node-ai">----</div>
+                        </div>
+                        <div class="spec-box">
+                            <div class="label">Sumber Kuasa</div>
+                            <div class="val" id="node-power">USB / DC</div>
+                        </div>
+                        <div class="spec-box">
+                            <div class="label">Ping Watchdog</div>
+                            <div class="val" id="node-ping" style="color: #16a34a;">Aktif</div>
+                        </div>
+                    </div>
+
+                    <div style="background: #ffffff; border: 1px solid #e2e8f0; padding: 10px; border-radius: 6px; text-align: center;">
+                        <button class="btn-action" onclick="triggerRemoteBuzzer()">🔔 Uji Perkakasan Buzzer (Ping)</button>
+                        <span id="node-buzzer-status" style="font-size: 0.7rem; font-weight: bold; color: #16a34a; display: block; margin-top: 6px;"></span>
+                    </div>
+                </div>
             </div>
         </div>
-        <!-- Tambahan nod boleh dikembangkan di sini -->
     </div>
 
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    
     <script>
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyCTHW_s2SYe3KbDvDPWuyg5vHEbLv-MUnA",
             databaseURL: "https://fyp-sicct-default-rtdb.asia-southeast1.firebasedatabase.app",
@@ -118,30 +229,59 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        database.ref('ktmb_node_01').on('value', (snapshot) => {
+        let lastDataTimestamp = 0;
+
+        // Watchdog Timer
+        setInterval(() => {
+            const now = Date.now();
+            const badge = document.getElementById('node-status-badge');
+            if (lastDataTimestamp === 0 || (now - lastDataTimestamp > 5000)) {
+                badge.className = "status-badge status-offline";
+                badge.innerText = "OFFLINE";
+                document.getElementById('node-ping').innerText = "Terputus";
+                document.getElementById('node-ping').style.color = "#dc2626";
+            }
+        }, 1000);
+
+        // Listen to Live Telemetry
+        const nodeRef = database.ref('ktmb_node_01');
+        nodeRef.on('value', (snapshot) => {
             const data = snapshot.val();
+            const badge = document.getElementById('node-status-badge');
+            
             if (data) {
-                document.getElementById('n1-adc').innerText = data.adc_value ?? '--';
-                document.getElementById('n1-volt').innerText = (data.voltage ?? '5.0') + 'V (' + (data.power_source || 'USB') + ')';
-                document.getElementById('n1-tamper').innerText = (data.tamper_confidence ?? 0) + '%';
-                document.getElementById('n1-shake').innerText = (data.shake_confidence ?? 0) + '%';
-                
-                const badge = document.getElementById('n1-badge');
-                const card = badge.closest('.node-card');
-                badge.innerText = data.status;
-                
-                if(data.status === "SECURE") {
-                    badge.className = "node-status-badge badge-secure";
-                    card.className = "node-card";
-                } else if(data.status === "PLATFORM SHAKE") {
-                    badge.className = "node-status-badge badge-warning";
-                    card.className = "node-card warning";
+                lastDataTimestamp = Date.now();
+                document.getElementById('node-adc').innerText = data.adc_value ?? '----';
+                document.getElementById('node-ai').innerText = data.ai_status ?? 'Idle';
+                document.getElementById('node-power').innerText = data.power_source ?? 'USB / DC';
+                document.getElementById('node-ping').innerText = "Online";
+                document.getElementById('node-ping').style.color = "#16a34a";
+
+                if (data.adc_value < 200) {
+                    badge.className = "status-badge status-danger";
+                    badge.innerText = "BAHAYA";
                 } else {
-                    badge.className = "node-status-badge badge-alarm";
-                    card.className = "node-card alarm";
+                    badge.className = "status-badge status-secure";
+                    badge.innerText = "ONLINE";
                 }
             }
         });
+
+        // Remote Actuator Command (Buzzer Test Ping)
+        function triggerRemoteBuzzer() {
+            database.ref('ktmb_node_01/commands').update({
+                buzzer_test: Date.now()
+            }, (error) => {
+                const statusSpan = document.getElementById('node-buzzer-status');
+                if (!error) {
+                    statusSpan.innerText = "Arahan ping berjaya dihantar ke ESP32!";
+                    setTimeout(() => { statusSpan.innerText = ""; }, 3000);
+                } else {
+                    statusSpan.style.color = "#dc2626";
+                    statusSpan.innerText = "Gagal hantar arahan.";
+                }
+            });
+        }
     </script>
 </body>
 </html>

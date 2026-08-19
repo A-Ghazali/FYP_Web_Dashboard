@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terminal Arahan KTMB - Panduan Bantuan S-ICCT</title>
+    <title>Terminal Arahan KTMB - Bantuan &amp; Panduan S-ICCT</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -24,14 +24,14 @@
             position: sticky;
             top: 0;
             z-index: 1000;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
         .header-brand { display: flex; align-items: center; gap: 14px; }
         .logo-container { background: #ffffff; padding: 6px 10px; border-radius: 6px; border: 1px solid #e2e8f0; }
         .ktm-logo { height: 28px; width: auto; }
         .header-title h1 { font-size: 0.95rem; font-weight: 800; color: #0f172a; }
         .header-title span { font-size: 0.68rem; color: #b45309; font-weight: 800; text-transform: uppercase; }
-        .nav-links { display: flex; gap: 10px; }
+        .nav-links { display: flex; gap: 10px; align-items: center; }
         .nav-btn {
             background: #f8fafc;
             border: 1px solid #cbd5e1;
@@ -45,24 +45,85 @@
             text-transform: uppercase;
         }
         .nav-btn.active { background: #002B66; color: #ffffff; border-color: #002B66; }
+
         .dashboard-container {
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 20px auto;
             padding: 0 16px;
-            display: flex;
-            flex-direction: column;
+            display: grid;
+            grid-template-columns: 1fr;
             gap: 16px;
         }
+
         .card {
             background: #ffffff;
             border-radius: 14px;
             padding: 24px;
             border: 1px solid #cbd5e1;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
-        .card h2 { font-size: 1rem; font-weight: 800; color: #0f172a; text-transform: uppercase; margin-bottom: 12px; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; }
-        .card p, .card li { font-size: 0.85rem; color: #475569; line-height: 1.6; margin-bottom: 10px; }
-        .card ul { padding-left: 20px; }
+
+        .card h2 {
+            font-size: 1rem;
+            font-weight: 800;
+            color: #002B66;
+            text-transform: uppercase;
+            margin-bottom: 14px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #FFC72C;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        p, li {
+            font-size: 0.88rem;
+            line-height: 1.6;
+            color: #334155;
+            margin-bottom: 10px;
+        }
+
+        ul {
+            padding-left: 20px;
+            margin-bottom: 14px;
+        }
+
+        .faq-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-left: 4px solid #b45309;
+            padding: 14px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+        }
+
+        .faq-box h4 {
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 4px;
+        }
+
+        .specs-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 0.85rem;
+        }
+
+        .specs-table th, .specs-table td {
+            border: 1px solid #cbd5e1;
+            padding: 10px 12px;
+            text-align: left;
+        }
+
+        .specs-table th {
+            background: #f8fafc;
+            color: #0f172a;
+            font-weight: 800;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+        }
     </style>
 </head>
 <body>
@@ -70,8 +131,8 @@
         <div class="header-brand">
             <div class="logo-container"><img src="logo/Keretapi_Tanah_Melayu_Berhad_Logo.svg.png" alt="Logo KTMB" class="ktm-logo"></div>
             <div class="header-title">
-                <h1>Dokumentasi &amp; Bantuan</h1>
-                <span>Manual Operasi Sistem S-ICCT</span>
+                <h1>Panduan &amp; Manual Teknikal S-ICCT</h1>
+                <span>Sistem Kesinambungan Kabel Pintar &amp; Anti-Pencurian</span>
             </div>
         </div>
         <div class="nav-links">
@@ -83,28 +144,74 @@
     </header>
 
     <div class="dashboard-container">
+        <!-- Overview Card -->
         <div class="card">
             <h2>1. Mengenai Sistem S-ICCT</h2>
-            <p>S-ICCT (Smart Cable Continuity and Anti-Theft System) ialah sistem pemantauan pintar berasaskan mikropengawal ESP32 dan pangkalan data awan untuk melindungi infrastruktur kabel telekomunikasi dan isyarat landasan KTMB daripada kecurian atau sabotaj.</p>
+            <p><b>S-ICCT (Smart Cable Continuity and Anti-Theft System for Critical Infrastructure)</b> ialah sistem IoT bersepadu yang direka khusus untuk memantau integriti kabel signal/komunikasi Keretapi Tanah Melayu Berhad (KTMB) serta mengesan sebarang percubaan pencerobohan fizikal atau pemotongan kabel di sepanjang landasan.</p>
+            <p>Sistem ini menggabungkan perkakasan mikrokontroler <b>ESP32</b>, penderia analog berasaskan ADC, penderia gerakan <b>MPU-6050</b> yang menjalankan model pembelajaran mesin tepi (TinyML Edge Impulse), serta pangkalan data awan masa nyata (Firebase Realtime Database).</p>
         </div>
 
+        <!-- System Architecture & Parameters -->
         <div class="card">
-            <h2>2. Panduan Status Amaran</h2>
-            <ul>
-                <li><b>SECURE (SELAMAT):</b> Kabel berada dalam integriti penuh, tiada gangguan atau pencerobohan dikesan.</li>
-                <li><b>PLATFORM SHAKE (AMARAN GEGARAN):</b> Gegaran dikesan berhampiran landasan akibat pergerakan tren atau aktiviti luar biasa.</li>
-                <li><b>TAMPER DETECTED (PENCEROBOHAN):</b> Berlaku putusnya litar ADC atau cubaan potong kabel. Amaran audio akan berbunyi di terminal.</li>
-            </ul>
+            <h2>2. Parameter Teknikal &amp; Amaran Ambang</h2>
+            <p>Berikut adalah rujukan pantas bagi nilai ambang (threshold) yang digunakan oleh sistem untuk menentukan status keselamatan landasan:</p>
+            
+            <table class="specs-table">
+                <thead>
+                    <tr>
+                        <th>Parameter Penderia</th>
+                        <th>Julat Normal / Selamat</th>
+                        <th>Amaran / Tindakan Kritikal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><b>Bacaan ADC (Kabel)</b></td>
+                        <td>1500 - 4095 (Kabel Utuh)</td>
+                        <td><b>&lt; 200:</b> Potongan Kabel / Terputus Kuasa (Merah)</td>
+                    </tr>
+                    <tr>
+                        <td><b>Model AI TinyML</b></td>
+                        <td>Idle (100% keyakinan)</td>
+                        <td>Shaking (Gegaran Keretapi) / Tamper (Pencerobohan Kotak)</td>
+                    </tr>
+                    <tr>
+                        <td><b>Watchdog Offline</b></td>
+                        <td>Kemas kini setiap &lt; 5 saat</td>
+                        <td><b>&gt; 5 saat tiada data:</b> Status bertukar ke OFFLINE / TIADA KUASA</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
 
+        <!-- FAQ / Troubleshooting Guide -->
         <div class="card">
-            <h2>3. Tindakan Kecemasan Operator</h2>
-            <p>Jika amaran pencerobohan dicetuskan:</p>
-            <ul>
-                <li>Semak peta geolokasi GIS pada papan pemuka utama untuk mengenalpasti koordinat nod yang terjejas.</li>
-                <li>Rujuk log insiden bagi melihat tempoh dan nilai ADC terkini.</li>
-                <li>Hubungi unit keselamatan landasan berdekatan untuk pemeriksaan fizikal di Sektor Utara Perak.</li>
-            </ul>
+            <h2>3. Soalan Lazim &amp; Penyelesaian Masalah (Troubleshooting)</h2>
+            
+            <div class="faq-box">
+                <h4>S: Mengapa papan pemuka menunjukkan "OFFLINE / TIADA KUASA"?</h4>
+                <p>J: Ini bermakna ESP32 terputus sambungan USB/kuasa atau hilang sambungan Wi-Fi. Sistem pemantauan pelayar web menggunakan penjaga masa (watchdog) 5 saat. Sekiranya tiada paket data diterima daripada Firebase dalam masa 5 saat, papan pemuka secara automatik bertukar ke mod luar talian.</p>
+            </div>
+
+            <div class="faq-box">
+                <h4>S: Bagaimana cara mengeksport laporan audit untuk dokumentasi FYP?</h4>
+                <p>J: Anda boleh pergi ke halaman utama Papan Pemuka (`index.html`), skrol ke bahagian <b>Log Insiden &amp; Audit Sistem</b>, kemudian klik butang <b>CSV</b> untuk fail hamparan atau <b>PDF</b> untuk laporan rasmi bertulis.</p>
+            </div>
+
+            <div class="faq-box">
+                <h4>S: Adakah data graf dalam menu Analisis kekal apabila pelayar ditutup?</h4>
+                <p>J: Ya. Halaman Analisis menarik rekod sejarah lepas secara automatik daripada nod pangkalan data Firebase berdasarkan pilihan masa (Live, 1 Hari, 1 Bulan, 1 Tahun).</p>
+            </div>
+        </div>
+
+        <!-- Project Ownership Card -->
+        <div class="card">
+            <h2>4. Maklumat Pembangunan Projek</h2>
+            <p><b>Supervisor:</b> TN. HJ. MOHD HAMZI BIN HJ MOHD SAFIAN</p>
+            <p><b>Ahli Kumpulan:</b> Ahmad Ghazali, Muhammad Ammar, Timothian Paul</p>
+            <p><b>Program:</b> Diploma Teknologi Maklumat (Rangkaian) - Semester 5 (DITN5B), Politeknik Ungku Omar (PUO)</p>
+            <p><b>Sektor Ujian:</b> Laluan Landasan Utara Perak (KTMB)</p>
+            <p><b>Teknologi Teras:</b> ESP32 Microcontroller, Firebase Realtime Database, Leaflet GIS Maps, Chart.js, TinyML Edge Impulse.</p>
         </div>
     </div>
 </body>

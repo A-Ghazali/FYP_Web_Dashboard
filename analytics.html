@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terminal Arahan KTMB - Analisis S-ICCT</title>
+    <title>Terminal Arahan KTMB - Pusat Analisis S-ICCT</title>
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -33,7 +33,7 @@
         .ktm-logo { height: 28px; width: auto; }
         .header-title h1 { font-size: 0.95rem; font-weight: 800; color: #0f172a; }
         .header-title span { font-size: 0.68rem; color: #b45309; font-weight: 800; text-transform: uppercase; }
-        .nav-links { display: flex; gap: 10px; }
+        .nav-links { display: flex; gap: 10px; align-items: center; }
         .nav-btn {
             background: #f8fafc;
             border: 1px solid #cbd5e1;
@@ -47,23 +47,99 @@
             text-transform: uppercase;
         }
         .nav-btn.active { background: #002B66; color: #ffffff; border-color: #002B66; }
+        
         .dashboard-container {
             max-width: 1400px;
             margin: 20px auto;
             padding: 0 16px;
             display: grid;
-            grid-template-columns: 1fr;
+            grid-template-columns: repeat(12, 1fr);
             gap: 16px;
         }
-        .card {
+
+        /* KPI Cards Grid */
+        .kpi-card {
+            grid-column: span 4;
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .kpi-card h3 { font-size: 0.72rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+        .kpi-card .kpi-value { font-size: 1.5rem; font-weight: 800; color: #0f172a; margin-top: 6px; }
+        .kpi-card span.status-green { color: #16a34a; }
+        .kpi-card span.status-red { color: #dc2626; }
+
+        /* Main Chart Cards */
+        .card-full {
+            grid-column: span 12;
             background: #ffffff;
             border-radius: 14px;
             padding: 20px;
             border: 1px solid #cbd5e1;
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
-        .card h2 { font-size: 0.9rem; font-weight: 800; color: #0f172a; text-transform: uppercase; margin-bottom: 14px; }
-        .chart-container { position: relative; height: 350px; width: 100%; }
+        .card-half {
+            grid-column: span 6;
+            background: #ffffff;
+            border-radius: 14px;
+            padding: 20px;
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .card-header h2 { font-size: 0.88rem; font-weight: 800; color: #0f172a; text-transform: uppercase; }
+        
+        .filter-group {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .filter-btn {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            color: #334155;
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.7rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.2s;
+        }
+        .filter-btn.active {
+            background: #002B66;
+            color: #ffffff;
+            border-color: #002B66;
+        }
+        .btn-save {
+            background: #16a34a;
+            border: 1px solid #15803d;
+            color: #ffffff;
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.7rem;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+        .btn-save:hover { background: #15803d; }
+
+        .chart-container { position: relative; height: 360px; width: 100%; }
+
+        @media (max-width: 900px) {
+            .kpi-card { grid-column: span 12; }
+            .card-half { grid-column: span 12; }
+        }
     </style>
 </head>
 <body>
@@ -71,8 +147,8 @@
         <div class="header-brand">
             <div class="logo-container"><img src="logo/Keretapi_Tanah_Melayu_Berhad_Logo.svg.png" alt="Logo KTMB" class="ktm-logo"></div>
             <div class="header-title">
-                <h1>Analisis Data S-ICCT</h1>
-                <span>Graf Tren Nilai ADC &amp; Integriti Kabel Masa Nyata</span>
+                <h1>Pusat Analisis &amp; Kecerdasan S-ICCT</h1>
+                <span>Sektor Landasan Utara Perak • Modul Pemantauan Lanjutan</span>
             </div>
         </div>
         <div class="nav-links">
@@ -84,10 +160,56 @@
     </header>
 
     <div class="dashboard-container">
-        <div class="card">
-            <h2>Graf Langsung Tren Nilai ADC Nod 01</h2>
+        <!-- KPI Summary Cards -->
+        <div class="kpi-card">
+            <h3>Indeks Kesihatan Sistem</h3>
+            <div class="kpi-value" id="kpi-health">--%</div>
+        </div>
+        <div class="kpi-card">
+            <h3>Purata Nilai ADC (Semasa)</h3>
+            <div class="kpi-value" id="kpi-adc">--</div>
+        </div>
+        <div class="kpi-card">
+            <h3>Jumlah Insiden Direkodkan</h3>
+            <div class="kpi-value" id="kpi-incidents">--</div>
+        </div>
+
+        <!-- Primary Line Chart: Cable Integrity (ADC) -->
+        <div class="card-full">
+            <div class="card-header">
+                <h2>Tren Integriti Kabel Landasan (Nilai ADC &amp; Ambang Amaran)</h2>
+                <div class="filter-group">
+                    <button class="filter-btn active" onclick="switchTimeRange('live', this)">Live</button>
+                    <button class="filter-btn" onclick="switchTimeRange('day', this)">1 Hari</button>
+                    <button class="filter-btn" onclick="switchTimeRange('month', this)">1 Bulan</button>
+                    <button class="filter-btn" onclick="switchTimeRange('year', this)">1 Tahun</button>
+                    <button class="btn-save" onclick="saveChartImage('adcChart', 'Tren_ADC')">Simpan Graf</button>
+                </div>
+            </div>
             <div class="chart-container">
                 <canvas id="adcChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Secondary Charts Grid -->
+        <div class="card-half">
+            tab 2
+            <div class="card-header">
+                <h2>Taburan Klasifikasi AI (TinyML Edge Impulse)</h2>
+                <button class="btn-save" onclick="saveChartImage('aiChart', 'Taburan_AI')">Simpan</button>
+            </div>
+            <div class="chart-container">
+                <canvas id="aiChart"></canvas>
+            </div>
+        </div>
+
+        <div class="card-half">
+            <div class="card-header">
+                <h2>Taburan Sumber Kuasa Sistem (USB / Solar / Bateri)</h2>
+                <button class="btn-save" onclick="saveChartImage('powerChart', 'Sumber_Kuasa')">Simpan</button>
+            </div>
+            <div class="chart-container">
+                <canvas id="powerChart"></canvas>
             </div>
         </div>
     </div>
@@ -97,32 +219,98 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     
     <script>
-        // Initialize Chart.js
-        const ctx = document.getElementById('adcChart').getContext('2d');
-        const adcChart = new Chart(ctx, {
+        let currentMode = 'live';
+        let rawLogsCache = {};
+
+        // 1. Initialize ADC Line Chart with Threshold Segments
+        const ctxAdc = document.getElementById('adcChart').getContext('2d');
+        const adcChart = new Chart(ctxAdc, {
             type: 'line',
             data: {
-                labels: [], // Time labels will populate dynamically
+                labels: [], 
                 datasets: [{
-                    label: 'Nilai ADC (Integriti Kabel Sektor Utara Perak)',
-                    data: [], // Live ADC values
-                    borderColor: '#b45309',
-                    backgroundColor: 'rgba(180, 83, 9, 0.1)',
-                    borderWidth: 2,
+                    label: 'Nilai ADC (Sektor Utara Perak)',
+                    data: [],
+                    borderWidth: 2.5,
                     tension: 0.3,
-                    fill: true
+                    fill: true,
+                    pointRadius: 3,
+                    segment: {
+                        borderColor: ctx => ctx.p1.parsed.y < 200 ? '#dc2626' : '#16a34a',
+                        backgroundColor: ctx => ctx.p1.parsed.y < 200 ? 'rgba(220, 38, 38, 0.1)' : 'rgba(22, 163, 74, 0.1)'
+                    },
+                    pointBackgroundColor: ctx => ctx.raw < 200 ? '#dc2626' : '#16a34a',
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 1
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#0f172a',
+                        titleColor: '#FFC72C',
+                        bodyColor: '#ffffff',
+                        borderColor: '#cbd5e1',
+                        borderWidth: 1,
+                        padding: 10,
+                        callbacks: {
+                            label: function(context) {
+                                let val = context.parsed.y;
+                                let statusText = val < 200 ? "🚨 BAHAYA: Potongan Kabel!" : "✅ Status: Normal";
+                                return [` Nilai ADC: ${val}`, ` ${statusText}`];
+                            }
+                        }
+                    }
+                },
                 scales: {
-                    y: { 
-                        grid: { color: '#e2e8f0' },
-                        min: 0,
-                        max: 4095 // ESP32 12-bit ADC max range
-                    },
+                    y: { grid: { color: '#e2e8f0', borderDash: [4, 4] }, min: 0, max: 4095 },
                     x: { grid: { display: false } }
+                }
+            }
+        });
+
+        // 2. Initialize AI Threat Distribution Bar Chart
+        const ctxAi = document.getElementById('aiChart').getContext('2d');
+        const aiChart = new Chart(ctxAi, {
+            type: 'bar',
+            data: {
+                labels: ['Idle (Selamat)', 'Gegaran (Shake)', 'Pencerobohan (Tamper)'],
+                datasets: [{
+                    label: 'Jumlah Kejadian',
+                    data: [0, 0, 0],
+                    backgroundColor: ['#16a34a', '#d97706', '#dc2626'],
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { grid: { color: '#e2e8f0' }, beginAtZero: true }, x: { grid: { display: false } } }
+            }
+        });
+
+        // 3. Initialize Power Source Doughnut Chart
+        const ctxPower = document.getElementById('powerChart').getContext('2d');
+        const powerChart = new Chart(ctxPower, {
+            type: 'doughnut',
+            data: {
+                labels: ['USB', 'Solar', 'Bateri'],
+                datasets: [{
+                    data: [1, 0, 0],
+                    backgroundColor: ['#0284c7', '#16a34a', '#ca8a04'],
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { font: { weight: 'bold', size: 11 } } }
                 }
             }
         });
@@ -136,25 +324,132 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        // Listen to live telemetry and append points to the chart dynamically
+        // Mode Switching Logic
+        function switchTimeRange(mode, btnElement) {
+            currentMode = mode;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btnElement.classList.add('active');
+            processAndRenderData();
+        }
+
+        // Fetch Historical Logs and Update Analytics
+        const logsRef = database.ref('logs');
+        logsRef.on('value', (snapshot) => {
+            rawLogsCache = snapshot.val() || {};
+            processAndRenderData();
+            updateKPIMetricsAndExtraCharts();
+        });
+
+        // Live Realtime Telemetry Listener
         const nodeRef = database.ref('ktmb_node_01');
         nodeRef.on('value', (snapshot) => {
             const data = snapshot.val();
-            if (data && data.adc_value !== undefined) {
-                const now = new Date();
-                const timeString = now.toLocaleTimeString('en-GB', { timeZone: 'Asia/Kuala_Lumpur', hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                
-                // Keep a rolling window of the last 15 data points on the graph
-                if (adcChart.data.labels.length > 15) {
-                    adcChart.data.labels.shift();
-                    adcChart.data.datasets[0].data.shift();
+            if (data) {
+                // Update live KPI values
+                document.getElementById('kpi-adc').innerText = data.adc_value ?? '--';
+                if (data.adc_value < 200) {
+                    document.getElementById('kpi-health').innerHTML = '<span class="status-red">BAHAYA (0%)</span>';
+                } else {
+                    document.getElementById('kpi-health').innerHTML = '<span class="status-green">SIHAT (100%)</span>';
                 }
 
-                adcChart.data.labels.push(timeString);
-                adcChart.data.datasets[0].data.push(data.adc_value);
-                adcChart.update();
+                if (currentMode === 'live' && data.adc_value !== undefined) {
+                    const timeString = new Date().toLocaleTimeString('en-GB', { timeZone: 'Asia/Kuala_Lumpur', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                    
+                    if (adcChart.data.labels.length > 20) {
+                        adcChart.data.labels.shift();
+                        adcChart.data.datasets[0].data.shift();
+                    }
+
+                    adcChart.data.labels.push(timeString);
+                    adcChart.data.datasets[0].data.push(data.adc_value);
+                    adcChart.update('none');
+                }
             }
         });
+
+        // Process Historical Data for Line Chart
+        function processAndRenderData() {
+            if (currentMode === 'live') {
+                adcChart.data.labels = [];
+                adcChart.data.datasets[0].data = [];
+                adcChart.update();
+                return;
+            }
+
+            const labels = [];
+            const dataPoints = [];
+            const now = Date.now();
+            const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+            const ONE_MONTH_MS = 30 * ONE_DAY_MS;
+            const ONE_YEAR_MS = 365 * ONE_DAY_MS;
+
+            Object.keys(rawLogsCache).forEach((key) => {
+                const log = rawLogsCache[key];
+                const timestamp = log.timestamp ? Number(log.timestamp) : 0;
+                
+                if (timestamp > 0) {
+                    const diff = now - timestamp;
+                    const dateObj = new Date(timestamp);
+
+                    if (currentMode === 'day' && diff <= ONE_DAY_MS) {
+                        labels.push(dateObj.toLocaleTimeString('en-GB', { timeZone: 'Asia/Kuala_Lumpur', hour: '2-digit', minute: '2-digit' }));
+                        dataPoints.push(log.adc_value ?? 0);
+                    } else if (currentMode === 'month' && diff <= ONE_MONTH_MS) {
+                        labels.push(dateObj.toLocaleDateString('en-GB', { timeZone: 'Asia/Kuala_Lumpur', day: '2-digit', month: '2-digit' }));
+                        dataPoints.push(log.adc_value ?? 0);
+                    } else if (currentMode === 'year' && diff <= ONE_YEAR_MS) {
+                        labels.push(dateObj.toLocaleDateString('en-GB', { timeZone: 'Asia/Kuala_Lumpur', day: '2-digit', month: '2-digit', year: '2-digit' }));
+                        dataPoints.push(log.adc_value ?? 0);
+                    }
+                }
+            });
+
+            adcChart.data.labels = labels;
+            adcChart.data.datasets[0].data = dataPoints;
+            adcChart.update();
+        }
+
+        // Aggregate Metrics for KPIs and Secondary Charts
+        function updateKPIMetricsAndExtraCharts() {
+            const keys = Object.keys(rawLogsCache);
+            document.getElementById('kpi-incidents').innerText = keys.length;
+
+            let idleCount = 0;
+            let shakeCount = 0;
+            let tamperCount = 0;
+            let usbCount = 0;
+            let solarCount = 0;
+            let batteryCount = 0;
+
+            keys.forEach(k => {
+                const log = rawLogsCache[k];
+                if (log.status === "SECURE") idleCount++;
+                else if (log.status === "PLATFORM SHAKE") shakeCount++;
+                else tamperCount++;
+
+                if (log.power_source === "Solar") solarCount++;
+                else if (log.power_source === "Battery") batteryCount++;
+                else usbCount++;
+            });
+
+            // Update AI Bar Chart
+            aiChart.data.datasets[0].data = [idleCount, shakeCount, tamperCount];
+            aiChart.update();
+
+            // Update Power Doughnut Chart
+            powerChart.data.datasets[0].data = [usbCount, solarCount, batteryCount];
+            powerChart.update();
+        }
+
+        // Save Individual Chart as Image
+        function saveChartImage(chartId, filenamePrefix) {
+            let targetCanvas = document.getElementById(chartId);
+            const imageLink = document.createElement('a');
+            imageLink.download = `${filenamePrefix}_S-ICCT_${new Date().toISOString().slice(0,10)}.png`;
+            imageLink.href = targetCanvas.toDataURL('image/png', 1.0);
+            imageLink.click();
+        }
     </script>
 </body>
 </html>
