@@ -730,7 +730,10 @@
         var nodeMarker = L.marker([initialLat, initialLng]).addTo(map);
         nodeMarker.bindPopup("<b>Nod 01: Sektor Utara Perak</b><br>Menyambung ke Awan...").openPopup();
 
-        // 4. Realtime Firebase Node Updates with Offline Timeout Protection
+        // Track last packet reception time using independent browser clock
+        let lastPacketReceivedTime = Date.now();
+
+        // 4. Realtime Firebase Node Updates
         const nodeRef = database.ref('ktmb_node_01');
         nodeRef.on('value', (snapshot) => {
             const data = snapshot.val();
@@ -738,22 +741,8 @@
             const cardBox = document.getElementById('card-box');
 
             if (data) {
-                // Check if ESP32 heartbeat is older than 5 seconds (meaning it lost power or disconnected)
-                const serverTimestamp = data.timestamp || 0;
-                const currentTime = Date.now();
-
-                if ((currentTime - serverTimestamp) > 5000) {
-                    statusElement.innerText = "OFFLINE / TIADA KUASA";
-                    statusElement.className = "status-alarm";
-                    cardBox.style.borderLeftColor = "#94a3b8";
-                    document.getElementById('adc-val').innerText = "N/A";
-                    document.getElementById('power-val').innerText = "Terputus (0V)";
-                    document.getElementById('tamper-val').innerText = "0%";
-                    document.getElementById('shake-val').innerText = "0%";
-                    nodeMarker.bindPopup("<b>Nod 01: Sektor Utara Perak</b><br>Status: <span style='color:#94a3b8;font-weight:bold;'>OFFLINE</span>");
-                    stopAlarmSound();
-                    return;
-                }
+                // Fresh packet received, update watchdog timer
+                lastPacketReceivedTime = Date.now();
 
                 // Normal Online Operation
                 document.getElementById('adc-val').innerText = data.adc_value ?? '--';
@@ -785,6 +774,24 @@
                 }
             }
         });
+
+        // Independent Watchdog Loop: Checks if ESP32 stopped sending data
+        setInterval(() => {
+            const statusElement = document.getElementById('node-status');
+            const cardBox = document.getElementById('card-box');
+            
+            if (Date.now() - lastPacketReceivedTime > 5000) {
+                statusElement.innerText = "OFFLINE / TIADA KUASA";
+                statusElement.className = "status-alarm";
+                cardBox.style.borderLeftColor = "#94a3b8";
+                document.getElementById('adc-val').innerText = "N/A";
+                document.getElementById('power-val').innerText = "Terputus (0V)";
+                document.getElementById('tamper-val').innerText = "0%";
+                document.getElementById('shake-val').innerText = "0%";
+                nodeMarker.bindPopup("<b>Nod 01: Sektor Utara Perak</b><br>Status: <span style='color:#94a3b8;font-weight:bold;'>OFFLINE</span>");
+                stopAlarmSound();
+            }
+        }, 1000);
 
         // 5. Permanent Database Incident Log Fetcher
         const logsRef = database.ref('logs').limitToLast(25);
