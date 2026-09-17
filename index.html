@@ -459,7 +459,7 @@
         <!-- GIS Trackside Leaflet Map Card -->
         <div class="glass-card map-card">
             <div class="card-header">
-                <h2>GEOLOKASI LANDASAN &amp; PETA GIS</h2>
+                <h2>GEOLOKASI LANDASAN &amp; Kawasan Liputan Ra-01 LoRa</h2>
             </div>
             <div id="map"></div>
         </div>
@@ -533,7 +533,7 @@
             audioMuted = !audioMuted;
             const btn = document.getElementById('audio-toggle-btn');
             if (audioMuted) {
-                btn.innerText = "🔇 Bunyi: TUTUP";
+                btn.innerText = "🔊 Bunyi: TUTUP";
                 btn.classList.add('muted');
                 stopAlarmSound();
             } else {
@@ -716,7 +716,7 @@
             doc.save(`Laporan_S-ICCT_${new Date().toISOString().slice(0,10)}.pdf`);
         });
 
-        // 3. Leaflet Map Initialization
+        // 3. Leaflet Map Initialization with Ra-01 LoRa Range Circle
         const initialLat = 4.610258;
         const initialLng = 101.088256;
 
@@ -724,7 +724,19 @@
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
 
         var nodeMarker = L.marker([initialLat, initialLng]).addTo(map);
-        nodeMarker.bindPopup("<b>Nod 01: Sektor Utara Perak</b><br>Menyambung ke Awan...").openPopup();
+        
+        // Ra-01 LoRa range circle indicator (Radius set to 350 meters visual telemetry scale)
+        var ra01RangeCircle = L.circle([initialLat, initialLng], {
+            color: '#16a34a',
+            fillColor: '#22c55e',
+            fillOpacity: 0.15,
+            radius: 350,
+            weight: 2,
+            dashArray: '5, 5'
+        }).addTo(map);
+
+        nodeMarker.bindPopup("<b>Nod 01: Sektor Utara Perak</b><br>Kawasan Liputan Ra-01 LoRa (Aktif)").openPopup();
+        ra01RangeCircle.bindPopup("<b>Kawasan Liputan Komunikasi Ra-01 LoRa</b><br>Frekuensi: 433MHz | Radius Liputan: ~350m");
 
         let lastPacketReceivedTime = Date.now();
 
@@ -747,21 +759,25 @@
 
                 if (data.lat && data.lng) {
                     nodeMarker.setLatLng([data.lat, data.lng]);
+                    ra01RangeCircle.setLatLng([data.lat, data.lng]);
                 }
 
                 if (data.status === "SECURE") {
                     statusElement.className = "status-secure";
                     cardBox.style.borderLeftColor = "#16a34a";
+                    ra01RangeCircle.setStyle({ color: '#16a34a', fillColor: '#22c55e', fillOpacity: 0.15 });
                     nodeMarker.bindPopup("<b>Nod 01: Sektor Utara Perak</b><br>Status: <span style='color:#16a34a;font-weight:bold;'>SELAMAT (SECURE)</span>");
                     stopAlarmSound();
                 } else if (data.status === "PLATFORM SHAKE") {
                     statusElement.className = "status-warning";
                     cardBox.style.borderLeftColor = "#d97706";
+                    ra01RangeCircle.setStyle({ color: '#d97706', fillColor: '#f59e0b', fillOpacity: 0.25 });
                     nodeMarker.bindPopup("<b>Nod 01: Sektor Utara Perak</b><br>Status: <span style='color:#d97706;font-weight:bold;'>AMARAN GEGARAN</span>").openPopup();
                     stopAlarmSound();
                 } else {
                     statusElement.className = "status-alarm";
                     cardBox.style.borderLeftColor = "#dc2626";
+                    ra01RangeCircle.setStyle({ color: '#dc2626', fillColor: '#ef4444', fillOpacity: 0.35 });
                     nodeMarker.bindPopup("<b style='color:#dc2626;'>🚨 AMARAN KESELAMATAN!</b><br>Ancaman: <b>" + data.status + "</b>").openPopup();
                     playAlarmSound();
                 }
@@ -777,6 +793,7 @@
                 statusElement.innerText = "OFFLINE / TIADA KUASA";
                 statusElement.className = "status-alarm";
                 cardBox.style.borderLeftColor = "#94a3b8";
+                ra01RangeCircle.setStyle({ color: '#64748b', fillColor: '#94a3b8', fillOpacity: 0.1 });
                 document.getElementById('adc-val').innerText = "N/A";
                 document.getElementById('power-val').innerText = "Terputus (0V)";
                 document.getElementById('tamper-val').innerText = "0%";
