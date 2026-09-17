@@ -418,7 +418,7 @@
             adcChart.update();
         }
 
-        // Aggregate Metrics for KPIs and Secondary Charts
+        // Aggregate Metrics for KPIs and Secondary Charts (Updated with Robust String Normalization)
         function updateKPIMetricsAndExtraCharts() {
             const keys = Object.keys(rawLogsCache);
             document.getElementById('kpi-incidents').innerText = keys.length;
@@ -432,14 +432,31 @@
 
             keys.forEach(k => {
                 const log = rawLogsCache[k];
-                if (log.status === "SECURE" || log.status === "IDLE") idleCount++;
-                else if (log.status === "PLATFORM SHAKE" || log.status === "SHAKE") shakeCount++;
-                else tamperCount++;
+                
+                // Status Aggregation
+                const statusStr = (log.status || "").toUpperCase();
+                if (statusStr.includes("SECURE") || statusStr.includes("IDLE")) {
+                    idleCount++;
+                } else if (statusStr.includes("SHAKE")) {
+                    shakeCount++;
+                } else {
+                    tamperCount++;
+                }
 
-                const pSrc = (log.power_source || "").toLowerCase();
-                if (pSrc.includes("solar")) solarCount++;
-                else if (pSrc.includes("battery") || pSrc.includes("bateri")) batteryCount++;
-                else usbCount++;
+                // Robust Power Source Check (Evaluates power_source, power_mode, or power keys)
+                const pSrc = String(log.power_source || log.power_mode || log.power || "").toLowerCase().trim();
+
+                if (pSrc.includes("solar") || pSrc.includes("sol")) {
+                    solarCount++;
+                } else if (pSrc.includes("battery") || pSrc.includes("bateri") || pSrc.includes("bat")) {
+                    batteryCount++;
+                } else if (pSrc.includes("usb") || pSrc.includes("grid") || pSrc.includes("adapter")) {
+                    usbCount++;
+                } else {
+                    // Fallback to USB for unmatched keys, logging to console for analysis
+                    usbCount++;
+                    console.warn("Unrecognized or missing power source, defaulting to USB:", log.power_source);
+                }
             });
 
             // Update AI Bar Chart
