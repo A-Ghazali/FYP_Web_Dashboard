@@ -59,7 +59,7 @@
 
         /* KPI Cards Grid */
         .kpi-card {
-            grid-column: span 4;
+            grid-column: span 3;
             background: #ffffff;
             border-radius: 12px;
             padding: 16px;
@@ -170,6 +170,10 @@
             <div class="kpi-value" id="kpi-adc">--</div>
         </div>
         <div class="kpi-card">
+            <h3>Signal LoRa (RSSI / SNR)</h3>
+            <div class="kpi-value" id="kpi-lora">-- dBm</div>
+        </div>
+        <div class="kpi-card">
             <h3>Jumlah Insiden Direkodkan</h3>
             <div class="kpi-value" id="kpi-incidents">--</div>
         </div>
@@ -193,7 +197,6 @@
 
         <!-- Secondary Charts Grid -->
         <div class="card-half">
-            tab 2
             <div class="card-header">
                 <h2>Taburan Klasifikasi AI (TinyML Edge Impulse)</h2>
                 <button class="btn-save" onclick="saveChartImage('aiChart', 'Taburan_AI')">Simpan</button>
@@ -300,7 +303,7 @@
             data: {
                 labels: ['USB', 'Solar', 'Bateri'],
                 datasets: [{
-                    data: [1, 0, 0],
+                    data: [0, 0, 0],
                     backgroundColor: ['#0284c7', '#16a34a', '#ca8a04'],
                     borderWidth: 2,
                     borderColor: '#ffffff'
@@ -347,6 +350,11 @@
             if (data) {
                 // Update live KPI values
                 document.getElementById('kpi-adc').innerText = data.adc_value ?? '--';
+                
+                if (data.rssi !== undefined && data.snr !== undefined) {
+                    document.getElementById('kpi-lora').innerText = `${data.rssi} dBm (${data.snr} dB)`;
+                }
+
                 if (data.adc_value < 200) {
                     document.getElementById('kpi-health').innerHTML = '<span class="status-red">BAHAYA (0%)</span>';
                 } else {
@@ -368,7 +376,7 @@
             }
         });
 
-        // Process Historical Data for Line Chart
+        // Process Historical Data for Line Chart (Sorted Chronologically)
         function processAndRenderData() {
             if (currentMode === 'live') {
                 adcChart.data.labels = [];
@@ -384,24 +392,24 @@
             const ONE_MONTH_MS = 30 * ONE_DAY_MS;
             const ONE_YEAR_MS = 365 * ONE_DAY_MS;
 
-            Object.keys(rawLogsCache).forEach((key) => {
-                const log = rawLogsCache[key];
-                const timestamp = log.timestamp ? Number(log.timestamp) : 0;
-                
-                if (timestamp > 0) {
-                    const diff = now - timestamp;
-                    const dateObj = new Date(timestamp);
+            const sortedLogs = Object.values(rawLogsCache)
+                .filter(log => log.timestamp)
+                .sort((a, b) => Number(a.timestamp) - Number(b.timestamp));
 
-                    if (currentMode === 'day' && diff <= ONE_DAY_MS) {
-                        labels.push(dateObj.toLocaleTimeString('en-GB', { timeZone: 'Asia/Kuala_Lumpur', hour: '2-digit', minute: '2-digit' }));
-                        dataPoints.push(log.adc_value ?? 0);
-                    } else if (currentMode === 'month' && diff <= ONE_MONTH_MS) {
-                        labels.push(dateObj.toLocaleDateString('en-GB', { timeZone: 'Asia/Kuala_Lumpur', day: '2-digit', month: '2-digit' }));
-                        dataPoints.push(log.adc_value ?? 0);
-                    } else if (currentMode === 'year' && diff <= ONE_YEAR_MS) {
-                        labels.push(dateObj.toLocaleDateString('en-GB', { timeZone: 'Asia/Kuala_Lumpur', day: '2-digit', month: '2-digit', year: '2-digit' }));
-                        dataPoints.push(log.adc_value ?? 0);
-                    }
+            sortedLogs.forEach((log) => {
+                const timestamp = Number(log.timestamp);
+                const diff = now - timestamp;
+                const dateObj = new Date(timestamp);
+
+                if (currentMode === 'day' && diff <= ONE_DAY_MS) {
+                    labels.push(dateObj.toLocaleTimeString('en-GB', { timeZone: 'Asia/Kuala_Lumpur', hour: '2-digit', minute: '2-digit' }));
+                    dataPoints.push(log.adc_value ?? 0);
+                } else if (currentMode === 'month' && diff <= ONE_MONTH_MS) {
+                    labels.push(dateObj.toLocaleDateString('en-GB', { timeZone: 'Asia/Kuala_Lumpur', day: '2-digit', month: '2-digit' }));
+                    dataPoints.push(log.adc_value ?? 0);
+                } else if (currentMode === 'year' && diff <= ONE_YEAR_MS) {
+                    labels.push(dateObj.toLocaleDateString('en-GB', { timeZone: 'Asia/Kuala_Lumpur', day: '2-digit', month: '2-digit', year: '2-digit' }));
+                    dataPoints.push(log.adc_value ?? 0);
                 }
             });
 
@@ -424,12 +432,13 @@
 
             keys.forEach(k => {
                 const log = rawLogsCache[k];
-                if (log.status === "SECURE") idleCount++;
-                else if (log.status === "PLATFORM SHAKE") shakeCount++;
+                if (log.status === "SECURE" || log.status === "IDLE") idleCount++;
+                else if (log.status === "PLATFORM SHAKE" || log.status === "SHAKE") shakeCount++;
                 else tamperCount++;
 
-                if (log.power_source === "Solar") solarCount++;
-                else if (log.power_source === "Battery") batteryCount++;
+                const pSrc = (log.power_source || "").toLowerCase();
+                if (pSrc.includes("solar")) solarCount++;
+                else if (pSrc.includes("battery") || pSrc.includes("bateri")) batteryCount++;
                 else usbCount++;
             });
 

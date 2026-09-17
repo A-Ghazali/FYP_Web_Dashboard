@@ -1,831 +1,202 @@
 <!DOCTYPE html>
-<html lang="ms">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terminal Arahan KTMB - Papan Pemuka Keselamatan Landasan</title>
-    
-    <!-- Leaflet CSS for Map Styling -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
-            color: #1e293b;
-            min-height: 100vh;
-            position: relative;
-            overflow-x: hidden;
-            background-color: #f1f5f9;
-            padding-bottom: 40px;
-        }
-
-        /* Clean Light Mode Background */
-        .bg-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #f1f5f9;
-            z-index: -2;
-        }
-
-        /* Navigation Header */
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 14px 24px;
-            background: #ffffff;
-            border-bottom: 1px solid #cbd5e1;
-            border-top: 4px solid #FFC72C;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        .header-brand {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-
-        .logo-container {
-            background: #ffffff;
-            padding: 6px 10px;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-            flex-shrink: 0;
-            border: 1px solid #e2e8f0;
-        }
-
-        .ktm-logo {
-            height: 28px;
-            width: auto;
-        }
-
-        .header-title h1 {
-            font-size: 0.95rem;
-            font-weight: 800;
-            letter-spacing: 0.5px;
-            color: #0f172a;
-            line-height: 1.25;
-        }
-
-        .header-title span {
-            font-size: 0.68rem;
-            color: #b45309;
-            font-weight: 800;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
-
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-shrink: 0;
-        }
-
-        .nav-btn {
-            background: #f8fafc;
-            border: 1px solid #cbd5e1;
-            color: #334155;
-            padding: 7px 12px;
-            border-radius: 6px;
-            font-weight: 700;
-            font-size: 0.75rem;
-            cursor: pointer;
-            text-decoration: none;
-            text-transform: uppercase;
-            transition: all 0.25s ease;
-        }
-
-        .nav-btn:hover {
-            background: #e2e8f0;
-            color: #0f172a;
-        }
-
-        .nav-btn.active {
-            background: #002B66;
-            color: #ffffff;
-            border-color: #002B66;
-        }
-
-        .myt-clock {
-            font-family: monospace;
-            font-size: 0.78rem;
-            color: #475569;
-            background: #f8fafc;
-            padding: 6px 10px;
-            border-radius: 6px;
-            border: 1px solid #cbd5e1;
-            font-weight: 700;
-            white-space: nowrap;
-        }
-
-        .btn-audio {
-            background: #fef3c7;
-            border: 1px solid #f59e0b;
-            color: #b45309;
-            padding: 7px 12px;
-            border-radius: 6px;
-            font-weight: 700;
-            font-size: 0.75rem;
-            cursor: pointer;
-            transition: all 0.25s ease;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            white-space: nowrap;
-        }
-
-        .btn-audio.muted {
-            background: #f1f5f9;
-            border: 1px solid #cbd5e1;
-            color: #64748b;
-        }
-
-        .btn-logout {
-            background: #fee2e2;
-            border: 1px solid #f87171;
-            color: #dc2626;
-            padding: 7px 12px;
-            border-radius: 6px;
-            font-weight: 700;
-            font-size: 0.75rem;
-            cursor: pointer;
-            transition: all 0.25s ease;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            white-space: nowrap;
-        }
-
-        .btn-logout:hover {
-            background: #fecaca;
-            color: #991b1b;
-        }
-
-        /* Dashboard Container */
-        .dashboard-container {
-            max-width: 1400px;
-            margin: 20px auto;
-            padding: 0 16px;
-            display: grid;
-            grid-template-columns: repeat(12, 1fr);
-            gap: 16px;
-        }
-
-        /* Card Style for Light Mode */
-        .glass-card {
-            background: #ffffff;
-            border-radius: 14px;
-            padding: 18px;
-            border: 1px solid #cbd5e1;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 14px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        .card-header h2, .card-header h3 {
-            font-size: 0.88rem;
-            font-weight: 800;
-            letter-spacing: 0.8px;
-            color: #0f172a;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            text-transform: uppercase;
-        }
-
-        .card-header h2::before, .card-header h3::before {
-            content: '';
-            width: 3px;
-            height: 14px;
-            background: #f59e0b;
-            border-radius: 2px;
-        }
-
-        .card-header-actions {
-            display: flex;
-            gap: 8px;
-        }
-
-        .btn-action-sm {
-            background: #f8fafc;
-            border: 1px solid #cbd5e1;
-            color: #334155;
-            padding: 5px 10px;
-            border-radius: 6px;
-            font-weight: 700;
-            font-size: 0.7rem;
-            cursor: pointer;
-            text-transform: uppercase;
-            transition: all 0.25s ease;
-        }
-
-        .btn-action-sm:hover {
-            background: #e2e8f0;
-            color: #0f172a;
-        }
-
-        .btn-danger-sm {
-            background: #fee2e2;
-            border: 1px solid #f87171;
-            color: #dc2626;
-        }
-
-        .btn-danger-sm:hover {
-            background: #fecaca;
-            color: #991b1b;
-        }
-
-        /* Status & Telemetry Card */
-        .status-card-container {
-            grid-column: span 12;
-            border-left: 5px solid #16a34a;
-            transition: border-color 0.4s ease;
-        }
-
-        .status-main-display {
-            font-size: 1.1rem;
-            font-weight: 800;
-            margin-bottom: 12px;
-            letter-spacing: 0.3px;
-            color: #0f172a;
-        }
-
-        .status-secure { color: #16a34a; }
-        .status-warning { color: #d97706; }
-        .status-alarm { color: #dc2626; animation: blink 0.8s infinite; }
-
-        @keyframes blink { 50% { opacity: 0.25; } }
-
-        .telemetry-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-        }
-
-        .telemetry-item {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            padding: 10px 12px;
-            border-radius: 8px;
-            font-size: 0.78rem;
-            color: #475569;
-            font-weight: 600;
-        }
-
-        .telemetry-item b {
-            color: #b45309;
-            font-size: 0.95rem;
-            display: block;
-            margin-top: 4px;
-        }
-
-        /* Map Card Container */
-        .map-card {
-            grid-column: span 12;
-        }
-
-        #map {
-            height: 380px;
-            width: 100%;
-            border-radius: 8px;
-            border: 1px solid #cbd5e1;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
-
-        /* Leaflet Popup Styling for Light Mode */
-        .leaflet-popup-content-wrapper, .leaflet-popup-tip {
-            background: #ffffff !important;
-            color: #0f172a !important;
-            border: 1px solid #cbd5e1 !important;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
-        }
-
-        /* Incident Log Table Styling */
-        .log-section {
-            grid-column: span 12;
-        }
-
-        .table-responsive {
-            width: 100%;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-            font-size: 0.8rem;
-            white-space: nowrap;
-        }
-
-        th {
-            background: #f8fafc;
-            color: #475569;
-            padding: 10px 12px;
-            font-weight: 800;
-            border-bottom: 2px solid #cbd5e1;
-            text-transform: uppercase;
-            font-size: 0.7rem;
-            letter-spacing: 0.8px;
-        }
-
-        td {
-            padding: 10px 12px;
-            border-bottom: 1px solid #e2e8f0;
-            color: #334155;
-        }
-
-        tr:hover td {
-            background-color: #f8fafc;
-        }
-
-        /* Mobile Breakpoint Adjustments (< 768px) */
-        @media (max-width: 768px) {
-            header {
-                flex-direction: column;
-                gap: 12px;
-                align-items: stretch;
-                padding: 12px 16px;
-            }
-
-            .header-brand {
-                justify-content: flex-start;
-            }
-
-            .header-actions {
-                justify-content: space-between;
-                width: 100%;
-                flex-wrap: wrap;
-            }
-
-            .header-title h1 {
-                font-size: 0.82rem;
-            }
-
-            .dashboard-container {
-                padding: 0 10px;
-                gap: 12px;
-                margin: 12px auto;
-            }
-
-            .glass-card {
-                padding: 14px;
-            }
-
-            .telemetry-grid {
-                grid-template-columns: 1fr;
-                gap: 8px;
-            }
-
-            .telemetry-item b {
-                display: inline;
-                margin-top: 0;
-                margin-left: 6px;
-            }
-
-            #map {
-                height: 300px;
-            }
-        }
-    </style>
+    <title>S-ICCT Security Dashboard | KTMB Node 01</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Firebase App & Database Compat SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body>
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen">
 
-    <div class="bg-overlay"></div>
+    <!-- Top Navigation Bar -->
+    <nav class="bg-slate-800 border-b border-slate-700 px-6 py-4 flex flex-wrap justify-between items-center shadow-md">
+        <div class="flex items-center space-x-3">
+            <img src="logo/Keretapi_Tanah_Melayu_Berhad_Logo.svg.png" alt="KTMB Logo" class="h-10 w-auto">
+            <span class="text-xl font-bold tracking-wide text-white">S-ICCT MONITORING SYSTEM</span>
+        </div>
+        <div class="flex items-center space-x-6 text-sm">
+            <a href="index.html" class="text-blue-400 font-semibold flex items-center gap-2"><i class="fa-solid fa-gauge"></i> Overview</a>
+            <a href="nodes.html" class="text-slate-400 hover:text-white flex items-center gap-2"><i class="fa-solid fa-network-wired"></i> Nodes</a>
+            <a href="analytics.html" class="text-slate-400 hover:text-white flex items-center gap-2"><i class="fa-solid fa-chart-line"></i> Analytics</a>
+            <a href="help.html" class="text-slate-400 hover:text-white flex items-center gap-2"><i class="fa-solid fa-circle-question"></i> Help</a>
+            <a href="login.html" class="text-red-400 hover:text-red-300 font-semibold flex items-center gap-2"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+        </div>
+    </nav>
 
-    <!-- Navigation Header -->
-    <header>
-        <div class="header-brand">
-            <div class="logo-container">
-                <img src="logo/Keretapi_Tanah_Melayu_Berhad_Logo.svg.png" alt="Logo KTMB" class="ktm-logo">
+    <!-- Main Container -->
+    <main class="p-6 max-w-7xl mx-auto space-y-6">
+
+        <!-- Status Banner -->
+        <div id="status-card" class="bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-lg transition-all duration-300 flex justify-between items-center">
+            <div>
+                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Node System Status</p>
+                <h1 id="node-status" class="text-3xl font-extrabold mt-1 text-emerald-400">CONNECTING...</h1>
+                <p class="text-xs text-slate-400 mt-2">Last System Ping: <span id="last-updated" class="text-slate-200">--:--:--</span></p>
             </div>
-            <div class="header-title">
-                <h1>Sistem Kesinambungan Kabel Pintar dan Anti-Pencurian untuk Infrastruktur Kritikal (S-ICCT)</h1>
-                <span>Sektor: <b>Laluan Landasan Utara Perak</b></span>
+            <div id="status-icon-bg" class="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
+                <i id="status-icon" class="fa-solid fa-shield-halved text-emerald-400 text-3xl"></i>
             </div>
         </div>
 
-        <div class="header-actions">
-            <a href="index.html" class="nav-btn active">Papan Pemuka</a>
-            <a href="nodes.html" class="nav-btn">Nod</a>
-            <a href="analytics.html" class="nav-btn">Analisis</a>
-            <a href="help.html" class="nav-btn">Bantuan</a>
-            <div class="myt-clock">
-                MYT: <span id="clock-display" style="color: #b45309;">--:--:--</span>
-            </div>
-            <button id="audio-toggle-btn" class="btn-audio">🔊 Bunyi: HIDUP</button>
-            <button id="logout-btn" class="btn-logout">Log Keluar</button>
-        </div>
-    </header>
+        <!-- Metric Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
 
-    <!-- Main Dashboard Layout -->
-    <div class="dashboard-container">
-
-        <!-- Node Realtime Status & Telemetry Card -->
-        <div id="card-box" class="glass-card status-card-container">
-            <div class="card-header">
-                <h2>TELEMETRI NOD DERIA LANGSUNG</h2>
-            </div>
-            
-            <div class="status-main-display">
-                Status Nod 01: <span id="node-status" class="status-secure">MENYAMBUNG KE AWAN...</span>
-            </div>
-
-            <div class="telemetry-grid">
-                <div class="telemetry-item">Bacaan ADC: <b id="adc-val">--</b></div>
-                <div class="telemetry-item">Status Kuasa: <b id="power-val">--</b></div>
-                <div class="telemetry-item">Keyakinan Pencerobohan: <b id="tamper-val">--%</b></div>
-                <div class="telemetry-item">Keyakinan Gegaran: <b id="shake-val">--%</b></div>
-            </div>
-        </div>
-
-        <!-- GIS Trackside Leaflet Map Card -->
-        <div class="glass-card map-card">
-            <div class="card-header">
-                <h2>GEOLOKASI LANDASAN &amp; PETA GIS</h2>
-            </div>
-            <div id="map"></div>
-        </div>
-
-        <!-- Firebase Permanent Log Table -->
-        <div class="glass-card log-section">
-            <div class="card-header">
-                <h3>LOG INSIDEN &amp; AUDIT SISTEM</h3>
-                <div class="card-header-actions">
-                    <button id="download-csv-btn" class="btn-action-sm">CSV</button>
-                    <button id="download-pdf-btn" class="btn-action-sm">PDF</button>
-                    <button id="clear-logs-btn" class="btn-action-sm btn-danger-sm">Kosongkan</button>
+            <!-- Power Telemetry -->
+            <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-medium text-slate-400 uppercase">Power Source</span>
+                    <i class="fa-solid fa-bolt text-yellow-400"></i>
+                </div>
+                <div class="mt-3">
+                    <p id="power-source" class="text-lg font-bold text-white">--</p>
+                    <p class="text-sm text-slate-400 mt-1">Bus Voltage: <span id="voltage" class="font-semibold text-yellow-400">0.0</span> V</p>
                 </div>
             </div>
-            <div class="table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Tarikh &amp; Masa (MYT)</th>
-                            <th>ID Nod</th>
-                            <th>Status Insiden</th>
-                            <th>Tempoh</th>
-                            <th>Ringkasan Telemetri</th>
-                        </tr>
-                    </thead>
-                    <tbody id="log-body">
-                        <tr>
-                            <td colspan="5" style="color: #64748b; text-align: center; padding: 18px;">Mengambil log kekal daripada pangkalan data...</td>
-                        </tr>
-                    </tbody>
-                </table>
+
+            <!-- Current Telemetry -->
+            <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-medium text-slate-400 uppercase">Line Continuity</span>
+                    <i class="fa-solid fa-microchip text-blue-400"></i>
+                </div>
+                <div class="mt-3">
+                    <p class="text-lg font-bold text-white">ADC: <span id="adc-value" class="text-blue-400">0</span></p>
+                    <p id="cut-indicator" class="text-xs font-semibold text-emerald-400 mt-1">CONTINUITY NORMAL</p>
+                </div>
+            </div>
+
+            <!-- LoRa Signal Quality -->
+            <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-medium text-slate-400 uppercase">LoRa RF Link</span>
+                    <i class="fa-solid fa-wifi text-indigo-400"></i>
+                </div>
+                <div class="mt-3">
+                    <p class="text-lg font-bold text-white">RSSI: <span id="rssi" class="text-indigo-400">--</span> dBm</p>
+                    <p class="text-sm text-slate-400 mt-1">SNR: <span id="snr" class="font-semibold text-white">--</span> dB</p>
+                </div>
+            </div>
+
+            <!-- AI Classification Confidence -->
+            <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-medium text-slate-400 uppercase">TinyML Threat Engine</span>
+                    <i class="fa-solid fa-brain text-purple-400"></i>
+                </div>
+                <div class="mt-3 space-y-1">
+                    <div class="flex justify-between text-xs">
+                        <span class="text-slate-400">Tamper Confidence</span>
+                        <span id="tamper-conf" class="font-bold text-purple-400">0%</span>
+                    </div>
+                    <div class="flex justify-between text-xs">
+                        <span class="text-slate-400">Shake Confidence</span>
+                        <span id="shake-conf" class="font-bold text-indigo-400">0%</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Node Geographic Details -->
+        <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-sm flex flex-wrap justify-between items-center text-sm">
+            <div class="flex items-center space-x-3">
+                <i class="fa-solid fa-location-dot text-red-500 text-xl"></i>
+                <div>
+                    <p class="font-semibold text-white">KTMB Node 01 - Track Sector Alpha</p>
+                    <p class="text-xs text-slate-400">Coordinates: <span id="node-coords">4.610258, 101.088256</span></p>
+                </div>
+            </div>
+            <div class="mt-2 sm:mt-0">
+                <span class="px-3 py-1 bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs rounded-full font-medium">433 MHz Bandwidth</span>
             </div>
         </div>
 
-    </div>
+    </main>
 
-    <!-- Leaflet Map Library -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    
-    <!-- jsPDF & AutoTable Libraries for PDF Export -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-
+    <!-- Firebase Realtime Sync Logic -->
     <script>
-        // 1. Malaysia Time (MYT) Live Clock
-        function updateMalaysiaClock() {
-            const now = new Date();
-            const options = {
-                timeZone: 'Asia/Kuala_Lumpur',
-                hour12: true,
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-            };
-            document.getElementById('clock-display').innerText = now.toLocaleTimeString('en-GB', options);
-        }
-        setInterval(updateMalaysiaClock, 1000);
-        updateMalaysiaClock();
-
-        // Audio Alarm System using Web Audio API
-        let audioMuted = false;
-        let audioCtx = null;
-        let alarmOscillator = null;
-
-        document.getElementById('audio-toggle-btn').addEventListener('click', () => {
-            audioMuted = !audioMuted;
-            const btn = document.getElementById('audio-toggle-btn');
-            if (audioMuted) {
-                btn.innerText = "🔇 Bunyi: TUTUP";
-                btn.classList.add('muted');
-                stopAlarmSound();
-            } else {
-                btn.innerText = "🔊 Bunyi: HIDUP";
-                btn.classList.remove('muted');
-            }
-        });
-
-        function playAlarmSound() {
-            if (audioMuted) return;
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            }
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
-            if (!alarmOscillator) {
-                alarmOscillator = audioCtx.createOscillator();
-                const gainNode = audioCtx.createGain();
-                alarmOscillator.type = 'sawtooth';
-                alarmOscillator.frequency.setValueAtTime(750, audioCtx.currentTime);
-                
-                setInterval(() => {
-                    if (alarmOscillator && audioCtx) {
-                        alarmOscillator.frequency.setValueAtTime(550, audioCtx.currentTime);
-                        setTimeout(() => {
-                            if (alarmOscillator && audioCtx) alarmOscillator.frequency.setValueAtTime(850, audioCtx.currentTime);
-                        }, 300);
-                    }
-                }, 600);
-
-                gainNode.gain.setValueAtTime(0.12, audioCtx.currentTime);
-                alarmOscillator.connect(gainNode);
-                gainNode.connect(audioCtx.destination);
-                alarmOscillator.start();
-            }
-        }
-
-        function stopAlarmSound() {
-            if (alarmOscillator) {
-                try {
-                    alarmOscillator.stop();
-                    alarmOscillator.disconnect();
-                } catch(e) {}
-                alarmOscillator = null;
-            }
-        }
-
-        // Helper function to format timestamps into structured Date, Time, and Duration
-        function formatLogMetadata(log) {
-            let timestampMs = log.timestamp ? Number(log.timestamp) : Date.now();
-            const eventDate = new Date(timestampMs);
-            
-            const dateStr = eventDate.toLocaleDateString('en-GB', { timeZone: 'Asia/Kuala_Lumpur', day: '2-digit', month: '2-digit', year: 'numeric' });
-            const timeStr = eventDate.toLocaleTimeString('en-GB', { timeZone: 'Asia/Kuala_Lumpur', hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            
-            let durationStr = log.duration ? log.duration : "--";
-
-            return {
-                rawDate: dateStr,
-                rawTime: timeStr,
-                dateTimeDisplay: `${dateStr} <span style="color:#64748b; font-size:0.72rem; display:block;">${timeStr}</span>`,
-                durationDisplay: durationStr
-            };
-        }
-
-        // 2. Firebase Configuration & Auth Guard
+        // Realtime Database Endpoint Configuration
         const firebaseConfig = {
-            apiKey: "AIzaSyCTHW_s2SYe3KbDvDPWuyg5vHEbLv-MUnA",
-            databaseURL: "https://fyp-sicct-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "fyp-sicct",
+            databaseURL: "https://fyp-sicct-default-rtdb.asia-southeast1.firebasedatabase.app"
         };
-        
+
+        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
-        const auth = firebase.auth();
+        const nodeRef = database.ref("ktmb_node_01");
 
-        // Auth Guard
-        auth.onAuthStateChanged((user) => {
-            if (!user) {
-                const currentPath = window.location.pathname;
-                const targetPath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1) + 'login.html';
-                window.location.replace(targetPath);
-            }
-        });
-
-        // Logout Event Listener
-        document.getElementById('logout-btn').addEventListener('click', () => {
-            auth.signOut().then(() => {
-                const currentPath = window.location.pathname;
-                const targetPath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1) + 'login.html';
-                window.location.replace(targetPath);
-            });
-        });
-
-        // Clear Logs Handler
-        document.getElementById('clear-logs-btn').addEventListener('click', () => {
-            if (confirm("Adakah anda pasti mahu mengosongkan semua log sistem kekal?")) {
-                database.ref('logs').remove()
-                    .then(() => console.log("Log dikosongkan."))
-                    .catch((error) => console.error(error));
-            }
-        });
-
-        // Download Logs as CSV Handler
-        let cachedLogsData = null;
-        document.getElementById('download-csv-btn').addEventListener('click', () => {
-            if (!cachedLogsData) {
-                alert("Tiada data log tersedia untuk dimuat turun.");
-                return;
-            }
-
-            let csvContent = "data:text/csv;charset=utf-8,Tarikh,Masa,ID Nod,Status,Tempoh,Nilai ADC,Keyakinan Pencerobohan,Keyakinan Gegaran\n";
-            
-            Object.keys(cachedLogsData).forEach((key) => {
-                const log = cachedLogsData[key];
-                const meta = formatLogMetadata(log);
-                const row = [
-                    `"${meta.rawDate}"`,
-                    `"${meta.rawTime}"`,
-                    log.node_id || 'Node 01',
-                    `"${log.status}"`,
-                    `"${meta.durationDisplay}"`,
-                    log.adc_value ?? '--',
-                    `${log.tamper_confidence ?? 0}%`,
-                    `${log.shake_confidence ?? 0}%`
-                ];
-                csvContent += row.join(",") + "\n";
-            });
-
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `Laporan_Audit_S-ICCT_${new Date().toISOString().slice(0,10)}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        });
-
-        // Download Logs as PDF Handler
-        document.getElementById('download-pdf-btn').addEventListener('click', () => {
-            if (!cachedLogsData) {
-                alert("Tiada data log tersedia untuk dieksport.");
-                return;
-            }
-
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-
-            doc.setFontSize(14);
-            doc.setTextColor(20, 30, 50);
-            doc.text("Laporan Insiden & Audit Sistem S-ICCT", 14, 15);
-            
-            doc.setFontSize(9);
-            doc.setTextColor(100, 110, 120);
-            doc.text(`Dijana pada: ${new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kuala_Lumpur' })} (MYT)`, 14, 22);
-
-            const tableRows = [];
-            Object.keys(cachedLogsData).reverse().forEach((key) => {
-                const log = cachedLogsData[key];
-                const meta = formatLogMetadata(log);
-                tableRows.push([
-                    `${meta.rawDate} ${meta.rawTime}`,
-                    log.node_id || 'Node 01',
-                    log.status,
-                    meta.durationDisplay,
-                    `ADC: ${log.adc_value ?? '--'} | Kuasa: ${log.power_source ?? 'USB'} (${log.voltage ?? '5.0'}V) | T: ${log.tamper_confidence ?? 0}%`
-                ]);
-            });
-
-            doc.autoTable({
-                startY: 28,
-                head: [['Tarikh & Masa', 'Nod', 'Status', 'Tempoh', 'Ringkasan Telemetri']],
-                body: tableRows,
-                theme: 'grid',
-                headStyles: { fillColor: [15, 23, 42], textColor: [255, 199, 44] },
-                styles: { fontSize: 8, cellPadding: 3 },
-            });
-
-            doc.save(`Laporan_S-ICCT_${new Date().toISOString().slice(0,10)}.pdf`);
-        });
-
-        // 3. Leaflet Map Initialization
-        const initialLat = 4.610258;
-        const initialLng = 101.088256;
-
-        var map = L.map('map').setView([initialLat, initialLng], 16);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
-
-        var nodeMarker = L.marker([initialLat, initialLng]).addTo(map);
-        nodeMarker.bindPopup("<b>Nod 01: Sektor Utara Perak</b><br>Menyambung ke Awan...").openPopup();
-
-        // Track last packet reception time using independent browser clock
-        let lastPacketReceivedTime = Date.now();
-
-        // 4. Realtime Firebase Node Updates
-        const nodeRef = database.ref('ktmb_node_01');
-        nodeRef.on('value', (snapshot) => {
+        // Realtime Listener
+        nodeRef.on("value", (snapshot) => {
             const data = snapshot.val();
-            const statusElement = document.getElementById('node-status');
-            const cardBox = document.getElementById('card-box');
+            if (!data) return;
 
-            if (data) {
-                // Fresh packet received, update watchdog timer
-                lastPacketReceivedTime = Date.now();
+            // 1. Status Banner Logic
+            const statusElem = document.getElementById("node-status");
+            const statusCard = document.getElementById("status-card");
+            const statusIcon = document.getElementById("status-icon");
+            const statusIconBg = document.getElementById("status-icon-bg");
 
-                // Normal Online Operation
-                document.getElementById('adc-val').innerText = data.adc_value ?? '--';
-                document.getElementById('power-val').innerText = data.power_source ? `${data.power_source} (${data.voltage}V)` : '--';
-                document.getElementById('tamper-val').innerText = (data.tamper_confidence ?? 0) + '%';
-                document.getElementById('shake-val').innerText = (data.shake_confidence ?? 0) + '%';
+            const status = data.status || "UNKNOWN";
+            statusElem.innerText = status;
 
-                statusElement.innerText = data.status;
-
-                if (data.lat && data.lng) {
-                    nodeMarker.setLatLng([data.lat, data.lng]);
-                }
-
-                if (data.status === "SECURE") {
-                    statusElement.className = "status-secure";
-                    cardBox.style.borderLeftColor = "#16a34a";
-                    nodeMarker.bindPopup("<b>Nod 01: Sektor Utara Perak</b><br>Status: <span style='color:#16a34a;font-weight:bold;'>SELAMAT (SECURE)</span>");
-                    stopAlarmSound();
-                } else if (data.status === "PLATFORM SHAKE") {
-                    statusElement.className = "status-warning";
-                    cardBox.style.borderLeftColor = "#d97706";
-                    nodeMarker.bindPopup("<b>Nod 01: Sektor Utara Perak</b><br>Status: <span style='color:#d97706;font-weight:bold;'>AMARAN GEGARAN</span>").openPopup();
-                    stopAlarmSound();
-                } else {
-                    statusElement.className = "status-alarm";
-                    cardBox.style.borderLeftColor = "#dc2626";
-                    nodeMarker.bindPopup("<b style='color:#dc2626;'>🚨 AMARAN KESELAMATAN!</b><br>Ancaman: <b>" + data.status + "</b>").openPopup();
-                    playAlarmSound();
-                }
-            }
-        });
-
-        // Independent Watchdog Loop: Checks if ESP32 stopped sending data
-        setInterval(() => {
-            const statusElement = document.getElementById('node-status');
-            const cardBox = document.getElementById('card-box');
-            
-            if (Date.now() - lastPacketReceivedTime > 5000) {
-                statusElement.innerText = "OFFLINE / TIADA KUASA";
-                statusElement.className = "status-alarm";
-                cardBox.style.borderLeftColor = "#94a3b8";
-                document.getElementById('adc-val').innerText = "N/A";
-                document.getElementById('power-val').innerText = "Terputus (0V)";
-                document.getElementById('tamper-val').innerText = "0%";
-                document.getElementById('shake-val').innerText = "0%";
-                nodeMarker.bindPopup("<b>Nod 01: Sektor Utara Perak</b><br>Status: <span style='color:#94a3b8;font-weight:bold;'>OFFLINE</span>");
-                stopAlarmSound();
-            }
-        }, 1000);
-
-        // 5. Permanent Database Incident Log Fetcher
-        const logsRef = database.ref('logs').limitToLast(25);
-        logsRef.on('value', (snapshot) => {
-            const logBody = document.getElementById('log-body');
-            logBody.innerHTML = '';
-
-            const logs = snapshot.val();
-            cachedLogsData = logs;
-
-            if (logs) {
-                Object.keys(logs).reverse().forEach((key) => {
-                    const log = logs[key];
-                    const row = document.createElement('tr');
-                    
-                    let statusBadgeColor = "#16a34a";
-                    if (log.status === "PLATFORM SHAKE") statusBadgeColor = "#d97706";
-                    else if (log.status !== "SECURE") statusBadgeColor = "#dc2626";
-
-                    const meta = formatLogMetadata(log);
-
-                    row.innerHTML = `
-                        <td style="font-family: monospace; font-size: 0.78rem; color:#334155;">${meta.dateTimeDisplay}</td>
-                        <td><b>${log.node_id || 'Node 01'}</b></td>
-                        <td style="color:${statusBadgeColor}; font-weight:bold;">${log.status}</td>
-                        <td style="color:#b45309; font-family: monospace; font-weight: 600;">${meta.durationDisplay}</td>
-                        <td style="font-size: 0.75rem; color: #475569;">
-                            ADC: ${log.adc_value ?? '--'} | Kuasa: ${log.power_source ?? 'USB'} (${log.voltage ?? '5.0'}V) | T: ${log.tamper_confidence ?? 0}%
-                        </td>
-                    `;
-                    logBody.appendChild(row);
-                });
+            if (status.includes("CUT") || status.includes("TAMPER")) {
+                statusElem.className = "text-3xl font-extrabold mt-1 text-red-500";
+                statusCard.className = "bg-slate-800 border border-red-500/50 rounded-xl p-6 shadow-lg shadow-red-950/30 transition-all duration-300 flex justify-between items-center";
+                statusIcon.className = "fa-solid fa-triangle-exclamation text-red-500 text-3xl";
+                statusIconBg.className = "w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center border border-red-500/20";
+            } else if (status.includes("SHAKE")) {
+                statusElem.className = "text-3xl font-extrabold mt-1 text-amber-400";
+                statusCard.className = "bg-slate-800 border border-amber-500/50 rounded-xl p-6 shadow-lg transition-all duration-300 flex justify-between items-center";
+                statusIcon.className = "fa-solid fa-wave-square text-amber-400 text-3xl";
+                statusIconBg.className = "w-16 h-16 rounded-full bg-amber-500/10 flex items-center justify-center border border-amber-500/20";
             } else {
-                logBody.innerHTML = '<tr><td colspan="5" style="color: #64748b; text-align: center; padding: 18px;">Tiada log insiden direkodkan.</td></tr>';
+                statusElem.className = "text-3xl font-extrabold mt-1 text-emerald-400";
+                statusCard.className = "bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-lg transition-all duration-300 flex justify-between items-center";
+                statusIcon.className = "fa-solid fa-shield-halved text-emerald-400 text-3xl";
+                statusIconBg.className = "w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20";
+            }
+
+            // 2. Power Telemetry Updates
+            document.getElementById("power-source").innerText = data.power_source || "3.7V Battery (Solar)";
+            document.getElementById("voltage").innerText = data.voltage !== undefined ? parseFloat(data.voltage).toFixed(1) : "0.0";
+
+            // 3. Continuity Telemetry
+            const adcVal = data.adc_value !== undefined ? data.adc_value : 0;
+            document.getElementById("adc-value").innerText = adcVal;
+            const cutIndicator = document.getElementById("cut-indicator");
+            if (adcVal < 200) {
+                cutIndicator.innerText = "LINE CUT DETECTED";
+                cutIndicator.className = "text-xs font-semibold text-red-500 mt-1";
+            } else {
+                cutIndicator.innerText = "CONTINUITY NORMAL";
+                cutIndicator.className = "text-xs font-semibold text-emerald-400 mt-1";
+            }
+
+            // 4. RF Quality Data (Injected by LoRa Gateway)
+            document.getElementById("rssi").innerText = data.rssi !== undefined ? data.rssi : "--";
+            document.getElementById("snr").innerText = data.snr !== undefined ? parseFloat(data.snr).toFixed(2) : "--";
+
+            // 5. TinyML AI Confidence Scores
+            document.getElementById("tamper-conf").innerText = `${data.tamper_confidence || 0}%`;
+            document.getElementById("shake-conf").innerText = `${data.shake_confidence || 0}%`;
+
+            // 6. Coordinates
+            if (data.lat && data.lng) {
+                document.getElementById("node-coords").innerText = `${data.lat}, ${data.lng}`;
+            }
+
+            // 7. Last Updated Timestamp (Firebase Server Timestamp)
+            if (data.last_updated) {
+                const dateObj = new Date(data.last_updated);
+                document.getElementById("last-updated").innerText = dateObj.toLocaleTimeString();
+            } else {
+                document.getElementById("last-updated").innerText = new Date().toLocaleTimeString();
             }
         });
     </script>
