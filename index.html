@@ -25,7 +25,6 @@
             padding-bottom: 40px;
         }
 
-        /* Clean Light Mode Background */
         .bg-overlay {
             position: fixed;
             top: 0;
@@ -184,7 +183,6 @@
             gap: 16px;
         }
 
-        /* Card Style for Light Mode */
         .glass-card {
             background: #ffffff;
             border-radius: 14px;
@@ -299,7 +297,7 @@
             margin-top: 4px;
         }
 
-        /* Map Card Container */
+        /* Map Card */
         .map-card {
             grid-column: span 12;
         }
@@ -312,7 +310,6 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
 
-        /* Leaflet Popup Styling for Light Mode */
         .leaflet-popup-content-wrapper, .leaflet-popup-tip {
             background: #ffffff !important;
             color: #0f172a !important;
@@ -320,7 +317,7 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
         }
 
-        /* Incident Log Table Styling */
+        /* Log Section */
         .log-section {
             grid-column: span 12;
         }
@@ -360,7 +357,6 @@
             background-color: #f8fafc;
         }
 
-        /* Mobile Breakpoint Adjustments (< 768px) */
         @media (max-width: 768px) {
             header {
                 flex-direction: column;
@@ -730,7 +726,6 @@
         var nodeMarker = L.marker([initialLat, initialLng]).addTo(map);
         nodeMarker.bindPopup("<b>Nod 01: Sektor Utara Perak</b><br>Menyambung ke Awan...").openPopup();
 
-        // Track last packet reception time using independent browser clock
         let lastPacketReceivedTime = Date.now();
 
         // 4. Realtime Firebase Node Updates
@@ -741,10 +736,8 @@
             const cardBox = document.getElementById('card-box');
 
             if (data) {
-                // Fresh packet received, update watchdog timer
                 lastPacketReceivedTime = Date.now();
 
-                // Normal Online Operation
                 document.getElementById('adc-val').innerText = data.adc_value ?? '--';
                 document.getElementById('power-val').innerText = data.power_source ? `${data.power_source} (${data.voltage}V)` : '--';
                 document.getElementById('tamper-val').innerText = (data.tamper_confidence ?? 0) + '%';
@@ -775,7 +768,7 @@
             }
         });
 
-        // Independent Watchdog Loop: Checks if ESP32 stopped sending data
+        // Watchdog Loop
         setInterval(() => {
             const statusElement = document.getElementById('node-status');
             const cardBox = document.getElementById('card-box');
