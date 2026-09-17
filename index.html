@@ -818,13 +818,14 @@
                         <td><b>${log.node_id || 'Node 01'}</b></td>
                         <td style="color:${statusBadgeColor}; font-weight:bold;">${log.status}</td>
                         <td style="color:#b45309; font-family: monospace; font-weight: 600;">${meta.durationDisplay}</td>
-                        <td style="color:#475569;">ADC: ${log.adc_value ?? '--'} | Kuasa: ${log.power_source ?? 'USB'} (${log.voltage ?? '5.0'}V) | Pencerobohan: ${log.tamper_confidence ?? 0}%</td>
+                        <td style="font-size: 0.75rem; color: #475569;">
+                            ADC: ${log.adc_value ?? '--'} | Kuasa: ${log.power_source ?? 'USB'} (${log.voltage ?? '5.0'}V) | T: ${log.tamper_confidence ?? 0}%
+                        </td>
                     `;
-
                     logBody.appendChild(row);
                 });
             } else {
-                logBody.innerHTML = '<tr><td colspan="5" style="color: #64748b; text-align: center; padding: 18px;">Tiada log kekal direkodkan setakat ini.</td></tr>';
+                logBody.innerHTML = '<tr><td colspan="5" style="color: #64748b; text-align: center; padding: 18px;">Tiada log insiden direkodkan.</td></tr>';
             }
         });
     </script>
